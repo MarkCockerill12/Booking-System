@@ -1,0 +1,17 @@
+{
+  "name": "conference-room-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/frontend",
+    "packages/backend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev:frontend": "npm run dev -w packages/frontend",
+    "build:backend": "npm run build -w packages/backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}
