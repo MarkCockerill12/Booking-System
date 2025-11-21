@@ -1,17 +1,13 @@
 // packages/frontend/pages/_app.tsx
-import '../styles/globals.css';
-import '../styles/AeroTheme.module.css'; // Import theme globally
+import '../styles/globals.css'; // Only import the new global styles
 import { AppProps } from 'next/app';
 import { AuthProvider } from '../hooks/useAuth';
-import styles from '../styles/AeroTheme.module.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <div className={styles.aeroBackground}>
-      <AuthProvider>
-        <Component {...pageProps} />
-      </AuthProvider>
-    </div>
+    <AuthProvider>
+      <Component {...pageProps} />
+    </AuthProvider>
   );
 }
 

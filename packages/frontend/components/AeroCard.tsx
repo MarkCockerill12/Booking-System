@@ -1,3 +1,4 @@
+// packages/frontend/components/AeroCard.tsx
 import React, { useState } from 'react';
 import { SideMenu } from './SideMenu';
 
@@ -13,12 +14,13 @@ export const AeroCard: React.FC<AeroCardProps> = ({ children, className = '', ti
 
   return (
     <>
+      {/* NOTE: We use the GLOBAL 'aero-glass' class now */}
       <div className={`aero-glass p-8 w-full max-w-3xl mx-auto ${className}`}>
         
         {showUserIcon && (
           <button 
             onClick={() => setMenuOpen(true)}
-            className="absolute top-4 right-4 text-3xl hover:scale-110 transition-transform z-20"
+            className="absolute top-4 right-4 text-2xl z-50 hover:scale-110 transition-transform filter drop-shadow-md"
             title="My Bookings"
           >
             👤
@@ -26,7 +28,7 @@ export const AeroCard: React.FC<AeroCardProps> = ({ children, className = '', ti
         )}
 
         {title && (
-          <h1 className="text-3xl font-bold mb-6 text-blue-900 border-b border-white/60 pb-3 drop-shadow-sm">
+          <h1 className="text-3xl font-bold mb-6 text-blue-900 border-b border-white/50 pb-3 relative z-10">
             {title}
           </h1>
         )}
