@@ -23,7 +23,7 @@ body {
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.5) 40%, /* More transparent in middle */
+    rgba(255, 255, 255, 0.5) 40%,
     rgba(255, 255, 255, 0.8) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.9);
@@ -56,7 +56,6 @@ body {
 
 /* 3. Side Menu Specific (Fixes the layout bug) */
 .aero-drawer {
-  /* Solid enough to read, glass enough to look cool */
   background: rgba(240, 248, 255, 0.95); 
   border-left: 1px solid rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(15px);

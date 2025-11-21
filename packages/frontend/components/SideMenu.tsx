@@ -12,7 +12,6 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      // Mock Data
       setBookings([
         { id: 'B-101', roomName: 'Executive Suite', date: '2025-11-20', status: 'CONFIRMED', price: 120 },
         { id: 'B-102', roomName: 'Focus Pod', date: '2025-12-05', status: 'PENDING', price: 60 }
@@ -22,7 +21,6 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="relative z-50">
-      {/* Backdrop */}
       <div 
         className={`fixed inset-0 bg-black/20 backdrop-blur-[2px] transition-opacity duration-300 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -30,13 +28,11 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
         onClick={onClose}
       />
 
-      {/* Sliding Panel */}
       <div 
         className={`fixed top-0 right-0 h-full w-80 aero-drawer transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {/* Header */}
         <div className="p-5 border-b border-blue-200/50 bg-white/30">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-blue-900">My Bookings</h2>
@@ -45,7 +41,6 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
           <p className="text-sm text-gray-600 mt-1">User: {user?.username || 'Guest'}</p>
         </div>
 
-        {/* List */}
         <div className="p-4 space-y-3 overflow-y-auto h-[calc(100%-130px)]">
           {bookings.map((b) => (
             <div key={b.id} className="bg-white/70 border border-white/80 p-3 rounded-md shadow-sm">
@@ -63,7 +58,6 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
           ))}
         </div>
 
-        {/* Footer */}
         <div className="absolute bottom-0 w-full p-4 border-t border-blue-200/50 bg-white/30">
           <button 
             onClick={logout} 

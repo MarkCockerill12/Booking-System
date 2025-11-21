@@ -13,13 +13,12 @@ export const AeroCard: React.FC<AeroCardProps> = ({ children, className = '', ti
 
   return (
     <>
-      {/* Use the global 'aero-glass' class directly */}
       <div className={`aero-glass p-8 w-full max-w-3xl mx-auto ${className}`}>
         
         {showUserIcon && (
           <button 
             onClick={() => setMenuOpen(true)}
-            className="absolute top-4 right-4 text-2xl hover:scale-110 transition-transform z-20"
+            className="absolute top-4 right-4 text-3xl hover:scale-110 transition-transform z-20"
             title="My Bookings"
           >
             👤
@@ -32,7 +31,6 @@ export const AeroCard: React.FC<AeroCardProps> = ({ children, className = '', ti
           </h1>
         )}
         
-        {/* Content Container */}
         <div className="relative z-10">
             {children}
         </div>
