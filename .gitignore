@@ -25,3 +25,7 @@ packages/backend/samconfig.toml
 # System Files
 .DS_Store
 Thumbs.db
+
+.vscode
+
+.docker-data/

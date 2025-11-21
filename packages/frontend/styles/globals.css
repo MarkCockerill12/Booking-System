@@ -2,49 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- CORE SETTINGS --- */
 body {
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
 }
 
-/* --- FRUTIGER AERO BACKGROUND --- */
-/* Ensure you have a file named 'background.jpg' in packages/frontend/public/ */
+/* 1. Background */
 .xp-background {
   background-image: url('/background.jpg');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   background-attachment: fixed;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* --- AERO GLASS CARD --- */
+/* 2. Standard Glass Card */
 .aero-glass {
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.7) 40%,
-    rgba(255, 255, 255, 0.85) 100%
+    rgba(255, 255, 255, 0.5) 40%, /* More transparent in middle */
+    rgba(255, 255, 255, 0.8) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
-  /* The heavy drop shadow typical of the era */
+  border-radius: 12px;
   box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-    inset 0 0 20px rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(6px);
+    0 15px 35px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
 }
 
-/* The shiny highlight at the top of windows */
+/* The shiny "glare" effect on top */
 .aero-glass::before {
   content: "";
   position: absolute;
@@ -54,76 +46,32 @@ body {
   height: 40%;
   background: linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.7) 0%,
     rgba(255, 255, 255, 0.1) 100%
   );
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
   pointer-events: none;
 }
 
-/* --- AERO INPUT FIELDS --- */
-.aero-input {
-  background: #ffffff;
-  border: 1px solid #a0a0a0;
-  border-radius: 8px; /* More rounded than modern inputs */
-  padding: 10px 15px;
-  font-size: 16px;
-  color: #333;
-  box-shadow: 
-    inset 0 2px 5px rgba(0, 0, 0, 0.1), /* Inner shadow for depth */
-    0 1px 0 rgba(255, 255, 255, 1); /* Bottom highlight */
-  transition: all 0.2s;
+/* 3. Side Menu Specific (Fixes the layout bug) */
+.aero-drawer {
+  /* Solid enough to read, glass enough to look cool */
+  background: rgba(240, 248, 255, 0.95); 
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
+  box-shadow: -10px 0 25px rgba(0, 0, 0, 0.2);
 }
 
-.aero-input:focus {
-  outline: none;
-  border-color: #5ba1ea;
-  box-shadow: 
-    inset 0 2px 5px rgba(0, 0, 0, 0.1),
-    0 0 5px rgba(91, 161, 234, 0.6);
-}
-
-/* --- GLOSSY GREEN BUTTON (Get Started) --- */
-.btn-glossy-green {
-  background: linear-gradient(to bottom, #89f089 0%, #4eba4e 50%, #2da02d 51%, #60c660 100%);
-  border: 1px solid #1e701e;
-  border-radius: 25px;
-  color: white;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-  box-shadow: 
-    0 3px 6px rgba(0,0,0,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.6);
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-.btn-glossy-green:hover {
-  filter: brightness(1.1);
-}
-.btn-glossy-green:active {
-  transform: translateY(1px);
-  box-shadow: inset 0 3px 8px rgba(0,0,0,0.4);
-}
-
-/* --- GLOSSY BLUE BUTTON (Login Arrow) --- */
+/* 4. Glossy Buttons */
 .btn-glossy-blue {
-  background: linear-gradient(to bottom, #7db9e8 0%, #2989d8 50%, #1e5799 51%, #7db9e8 100%);
-  border: 2px solid #fff;
-  outline: 1px solid #1e5799;
-  border-radius: 50%; /* Circular */
+  background: linear-gradient(to bottom, #5ba1ea 0%, #267cc9 50%, #1b5ea6 51%, #2583d6 100%);
+  border: 1px solid #134a88;
+  border-radius: 6px;
   color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 
-    0 4px 8px rgba(0,0,0,0.4),
-    inset 0 2px 5px rgba(255,255,255,0.5);
-  cursor: pointer;
+  font-weight: 600;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.4);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.3);
+  transition: all 0.1s;
 }
-.btn-glossy-blue:hover {
-  filter: brightness(1.15);
-}
-.btn-glossy-blue:active {
-  transform: scale(0.95);
-}
+.btn-glossy-blue:active { transform: translateY(1px); }

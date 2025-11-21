@@ -1,0 +1,5 @@
+node_modules
+.git
+.aws-sam
+packages/backend/node_modules
+packages/frontend/node_modules

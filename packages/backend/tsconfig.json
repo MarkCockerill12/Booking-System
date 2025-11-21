@@ -5,11 +5,15 @@
     "preserveConstEnums": true,
     "noEmit": true,
     "sourceMap": true,
-    "module": "es2020",
+    "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
+  },
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node"
   },
   "exclude": ["node_modules", "**/*.test.ts"]
 }

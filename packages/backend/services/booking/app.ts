@@ -5,7 +5,11 @@ import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { v4 as uuidv4 } from 'uuid';
 
-const db = new DynamoDBClient({});
+const isLocal = process.env.AWS_SAM_LOCAL === 'true';
+
+const db = new DynamoDBClient({
+    endpoint: process.env.DYNAMODB_ENDPOINT || undefined
+});
 const lambda = new LambdaClient({});
 const sqs = new SQSClient({});
 
@@ -13,30 +17,35 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   try {
     if (!event.body) return { statusCode: 400, body: "Missing body" };
     const { roomId, date } = JSON.parse(event.body);
-    const userId = "test-user-123"; // In real auth, get from event.requestContext
+    const userId = "test-user-123"; 
 
     // 1. Get Room Details
     const roomRes = await db.send(new GetItemCommand({
       TableName: process.env.ROOMS_TABLE,
       Key: marshall({ id: roomId })
     }));
-    // Note: In a real app, handle !roomRes.Item error here
-
-    // 2. Call Weather Service (Synchronous)
-    const weatherRes = await lambda.send(new InvokeCommand({
-      FunctionName: process.env.WEATHER_FUNC_NAME,
-      Payload: JSON.stringify({ queryStringParameters: { location: "London", date } })
-    }));
-    // Parse the nested JSON response from Lambda
-    const weatherPayload = JSON.parse(new TextDecoder().decode(weatherRes.Payload));
-    const weatherBody = JSON.parse(weatherPayload.body);
-    const temp = weatherBody.temperature;
+    
+    // 2. Weather Logic (Mocked inside Service or via Lambda Call)
+    let temp = 20;
+    if (!isLocal) {
+        // Real Lambda Call
+        const weatherRes = await lambda.send(new InvokeCommand({
+            FunctionName: process.env.WEATHER_FUNC_NAME,
+            Payload: JSON.stringify({ queryStringParameters: { location: "London", date } })
+        }));
+        const payloadString = new TextDecoder().decode(weatherRes.Payload);
+        const weatherBody = JSON.parse(JSON.parse(payloadString).body);
+        temp = weatherBody.temperature;
+    } else {
+        // Local Mock
+        temp = 28; 
+    }
 
     // 3. Calculate Price
-    let price = 100; // Default base price
-    if (temp > 25) price += 20; // Hot weather surcharge
+    let price = 100; 
+    if (temp > 25) price += 20; 
 
-    // 4. Write PENDING Booking to DB
+    // 4. Write Booking
     const bookingId = uuidv4();
     await db.send(new PutItemCommand({
       TableName: process.env.BOOKINGS_TABLE,
@@ -46,15 +55,20 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         roomId,
         date,
         status: "PENDING",
-        totalPrice: price
+        totalPrice: price,
+        createdAt: new Date().toISOString()
       })
     }));
 
-    // 5. Send to SQS for Payment
-    await sqs.send(new SendMessageCommand({
-      QueueUrl: process.env.PAYMENTS_QUEUE_URL,
-      MessageBody: JSON.stringify({ bookingId, price, userId })
-    }));
+    // 5. Send to SQS
+    if (!isLocal) {
+        await sqs.send(new SendMessageCommand({
+            QueueUrl: process.env.PAYMENTS_QUEUE_URL,
+            MessageBody: JSON.stringify({ bookingId, price, userId })
+        }));
+    } else {
+        console.log("⏩ [Local] Skipping SQS Send. Local Server will trigger Financial Service manually.");
+    }
 
     return {
       statusCode: 202,
