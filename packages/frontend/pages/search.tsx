@@ -17,100 +17,82 @@ interface Room {
 }
 
 const SearchPage = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const { data, isLoading, error, callApi } = useApi();
+  const { isLoading, error, callApi } = useApi();
+  
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-
+  const [location, setLocation] = useState('All');
+  
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
+    if (!isAuthenticated) router.push('/login');
   }, [isAuthenticated, router]);
 
   useEffect(() => {
-    // Initial data fetch (simulates search for all available rooms)
     const fetchRooms = async () => {
       const fetchedRooms = await callApi<Room[]>('/search/rooms', 'GET');
-      if (fetchedRooms) {
-        setRooms(fetchedRooms);
-      }
+      if (fetchedRooms) setRooms(fetchedRooms);
     };
     fetchRooms();
-  }, [callApi]);
+  }, [callApi]); // callApi is now stable
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulate API call with search term
-    const endpoint = `/search/rooms?term=${searchTerm}`;
-    const fetchedRooms = await callApi<Room[]>(endpoint, 'GET');
-    if (fetchedRooms) {
-      setRooms(fetchedRooms);
-    }
-  };
-
-  const filteredRooms = rooms.filter(room =>
-    room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    room.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (isLoading && rooms.length === 0) return (
-    <p className="text-white text-center mt-10">
-      Loading available rooms... (Attempting connection to backend)
-    </p>
-  );
+  const filteredRooms = rooms.filter(r => location === 'All' || r.location.includes(location));
 
   return (
-    <div className="flex flex-col items-center justify-center pt-10">
-      <AeroCard title="Search for Rooms" className="max-w-4xl p-8">
-        {/* User Icons (Top Right Corner) */}
-        <div className="absolute top-2 right-2 flex space-x-2">
-          <button className="text-3xl text-yellow-600" onClick={() => { /* Placeholder for Email/Notifications */ }}>
-            📧
-          </button>
-          <button className="text-3xl text-purple-600" onClick={logout}>
-            👤
-          </button>
-        </div>
-
-        {/* Filters Section (WIP Placeholder) */}
-        <div className="flex space-x-4 mb-6">
-          <button className={`${styles.aeroButton} px-4 py-1 text-sm bg-gray-200 text-gray-700`}>Filters</button>
-          <button className={`${styles.aeroButton} px-4 py-1 text-sm bg-gray-200 text-gray-700`}>Capacity</button>
-          <button className={`${styles.aeroButton} px-4 py-1 text-sm bg-gray-200 text-gray-700`}>Location</button>
-          <button className={`${styles.aeroButton} px-4 py-1 text-sm bg-gray-200 text-gray-700`}>Day</button>
-          <button className="text-2xl text-green-600">🌐</button>
-        </div>
-
-        {/* Error/Mocking Message */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
-            {error}
-          </div>
-        )}
-
-        {/* Room Results Grid */}
-        <div className="grid grid-cols-3 gap-6 mt-4">
-          {filteredRooms.map((room) => (
-            <div 
-              key={room.id} 
-              className={`${styles.aeroCard} p-4 cursor-pointer hover:shadow-lg transition-shadow`}
-              onClick={() => router.push(`/book/${room.id}`)}
-            >
-              <div className="h-20 bg-gray-300 mb-2">
-                <p className="text-sm p-1">Image Box</p>
-              </div>
-              <h3 className="font-bold text-lg text-blue-700">{room.name}</h3>
-              <p className="text-gray-600">Capacity: {room.capacity}</p>
-              <p className="text-gray-600">Location: {room.location}</p>
-            </div>
-          ))}
-        </div>
+    <div className="xp-background flex flex-col items-center justify-center pt-10">
+      <AeroCard title="Search for Rooms" className="max-w-5xl p-6" showUserIcon={true}>
         
-        {filteredRooms.length === 0 && !isLoading && (
-          <p className="text-center text-gray-500 mt-8">No rooms found. Try a different search.</p>
-        )}
+        {/* Filters Bar - Wireframe Style */}
+        <div className="flex space-x-2 mb-6 border-b border-gray-300 pb-4">
+            <div className="bg-gradient-to-b from-white to-gray-200 border border-gray-400 rounded-full px-4 py-1 text-sm shadow-sm font-bold text-gray-700 cursor-default">
+                Filters
+            </div>
+            <div className="bg-gradient-to-b from-white to-gray-200 border border-gray-400 rounded-full px-4 py-1 text-sm shadow-sm font-bold text-gray-700 cursor-default">
+                Capacity
+            </div>
+            {/* Interactive Location Filter */}
+            <select 
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="bg-gradient-to-b from-white to-gray-200 border border-gray-400 rounded-full px-4 py-1 text-sm shadow-sm font-bold text-blue-900 outline-none"
+            >
+                <option value="All">Location: All</option>
+                <option value="Dundee">Location: Dundee</option>
+                <option value="Glasgow">Location: Glasgow</option>
+            </select>
+            <div className="bg-gradient-to-b from-white to-gray-200 border border-gray-400 rounded-full px-4 py-1 text-sm shadow-sm font-bold text-gray-700 cursor-default">
+                Day
+            </div>
+            <div className="ml-auto text-2xl">🌐</div>
+        </div>
+
+        {/* Results Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {filteredRooms.map((room) => (
+              <div 
+                key={room.id} 
+                className="bg-white border border-gray-400 p-3 rounded-lg shadow-md cursor-pointer hover:bg-blue-50 transition-colors"
+                onClick={() => router.push(`/book/${room.id}`)}
+              >
+                {/* Wireframe 'X' Image Placeholder */}
+                <div className="border border-black h-32 mb-2 relative bg-white overflow-hidden">
+                   <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                      <line x1="0" y1="0" x2="100%" y2="100%" stroke="black" strokeWidth="1" />
+                      <line x1="100%" y1="0" x2="0" y2="100%" stroke="black" strokeWidth="1" />
+                   </svg>
+                   <span className="absolute top-1 left-1 text-xs bg-white px-1">Image Box</span>
+                </div>
+                
+                {/* Room Text */}
+                <h3 className="font-bold text-black mb-1">{room.name}</h3>
+                <div className="text-sm text-black space-y-1">
+                    <p>Capacity: {room.capacity}</p>
+                    <p>Description: {room.description}</p>
+                    <p>Location: {room.location}</p>
+                </div>
+              </div>
+            ))}
+        </div>
       </AeroCard>
     </div>
   );

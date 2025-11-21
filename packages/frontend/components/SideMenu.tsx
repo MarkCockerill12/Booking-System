@@ -1,3 +1,4 @@
+// packages/frontend/components/SideMenu.tsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -20,51 +21,52 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   return (
-    <div className="relative z-50">
+    <div className="relative z-[100]">
+      {/* Backdrop */}
       <div 
-        className={`fixed inset-0 bg-black/20 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/30 transition-opacity duration-300 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
       />
 
+      {/* Sliding Panel - Forced inline style for reliability */}
       <div 
-        className={`fixed top-0 right-0 h-full w-80 aero-drawer transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className="fixed top-0 right-0 h-full w-80 bg-white/90 border-l border-white shadow-2xl transition-transform duration-300 ease-out backdrop-blur-md"
+        style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
       >
-        <div className="p-5 border-b border-blue-200/50 bg-white/30">
+        <div className="p-4 border-b border-gray-300 bg-gradient-to-b from-white to-gray-100">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-blue-900">My Bookings</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-red-600 font-bold text-2xl">×</button>
+            <h2 className="text-xl font-bold text-gray-800">My Bookings</h2>
+            <button onClick={onClose} className="font-bold text-gray-500 hover:text-red-600 px-2">X</button>
           </div>
-          <p className="text-sm text-gray-600 mt-1">User: {user?.username || 'Guest'}</p>
+          <div className="flex items-center mt-2 text-sm text-gray-600">
+             <span className="mr-2">👤</span> {user?.email || 'Guest'}
+          </div>
         </div>
 
-        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100%-130px)]">
+        <div className="p-4 space-y-3 overflow-y-auto">
           {bookings.map((b) => (
-            <div key={b.id} className="bg-white/70 border border-white/80 p-3 rounded-md shadow-sm">
-              <h3 className="font-bold text-blue-800 text-sm">{b.roomName}</h3>
-              <p className="text-xs text-gray-600">{b.date}</p>
-              <div className="flex justify-between items-center mt-2">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                  b.status === 'CONFIRMED' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'
-                }`}>
-                  {b.status}
-                </span>
-                <span className="text-sm font-bold">£{b.price}</span>
+            <div key={b.id} className="bg-white border border-gray-300 p-3 rounded shadow-sm">
+              <h3 className="font-bold text-blue-900">{b.roomName}</h3>
+              <div className="flex justify-between text-sm mt-1">
+                <span>{b.date}</span>
+                <span className="font-bold">£{b.price}</span>
+              </div>
+              <div className={`text-xs mt-1 font-bold ${b.status === 'CONFIRMED' ? 'text-green-600' : 'text-yellow-600'}`}>
+                {b.status}
               </div>
             </div>
           ))}
         </div>
 
-        <div className="absolute bottom-0 w-full p-4 border-t border-blue-200/50 bg-white/30">
-          <button 
-            onClick={logout} 
-            className="w-full py-2 rounded-md bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors"
-          >
-            Sign Out
-          </button>
+        <div className="absolute bottom-0 w-full p-4 border-t border-gray-300 bg-gray-50">
+           <button onClick={logout} className="w-full py-1 px-3 bg-gray-200 border border-gray-400 rounded hover:bg-gray-300 shadow-sm text-sm">
+             Sign Out
+           </button>
+           <button onClick={onClose} className="w-full mt-2 py-1 px-3 bg-gray-200 border border-gray-400 rounded hover:bg-gray-300 shadow-sm text-sm">
+             Close
+           </button>
         </div>
       </div>
     </div>
