@@ -4,14 +4,13 @@ Description: Conference Room Booking System (Free Tier)
 
 # -------------------------------------------------------------------------
 # GLOBAL SETTINGS
-# These settings apply to all 5 Lambda functions automatically.
 # -------------------------------------------------------------------------
-Globals:
+Globals: 
   Function:
     Timeout: 10
     Runtime: nodejs20.x
     Architectures: [x86_64]
-    MemorySize: 128
+    MemorySize: 128 
     Environment:
       Variables:
         # Database Tables
@@ -63,8 +62,7 @@ Resources:
       RestApiId: !Ref ApiGateway
 
   # =========================================================================
-  # 2. DATA LAYER (DynamoDB & S3)
-  # NOTE: BillingMode is PROVISIONED to ensure FREE TIER eligibility.
+  # 2. DATA LAYER (DynamoDB & S3) - PROVISIONED FOR FREE TIER
   # =========================================================================
   LocationsTable:
     Type: AWS::DynamoDB::Table
@@ -133,6 +131,12 @@ Resources:
         GetWeather:
           Type: Api
           Properties: {Path: /weather, Method: get, RestApiId: !Ref ApiGateway}
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints: [app.ts]
 
   # --- Service 2: Booking (Orchestrator) ---
   BookingService:
@@ -161,6 +165,12 @@ Resources:
             Method: get
             RestApiId: !Ref ApiGateway
             Auth: {Authorizer: !Ref ApiAuthorizer}
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints: [app.ts]
 
   # --- Service 3: Financial (Async Processor) ---
   FinancialService:
@@ -175,6 +185,12 @@ Resources:
         PaymentTrigger:
           Type: SQS
           Properties: {Queue: !GetAtt PaymentsQueue.Arn, BatchSize: 1}
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints: [app.ts]
 
   # --- Service 4: Notification (Async Emailer) ---
   NotificationService:
@@ -182,13 +198,18 @@ Resources:
     Properties:
       CodeUri: services/notification/
       Handler: app.handler
-      # NOTE: You must verify your email in SES console for this policy to work
       Policies:
         - SESCrudPolicy: {IdentityName: "YOUR_VERIFIED_EMAIL@example.com"} 
       Events:
         NotifyTrigger:
           Type: SNS
           Properties: {Topic: !Ref BookingsTopic}
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints: [app.ts]
 
   # --- Service 5: Refund (Async Trigger) ---
   RefundService:
@@ -206,6 +227,12 @@ Resources:
             Method: post
             RestApiId: !Ref ApiGateway
             Auth: {Authorizer: !Ref ApiAuthorizer}
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints: [app.ts]
 
 Outputs:
   ApiUrl:
