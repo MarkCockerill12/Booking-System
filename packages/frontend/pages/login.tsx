@@ -23,52 +23,52 @@ const LoginPage = () => {
 
   return (
     // The container that holds the background
-    <div className="xp-background">
+    <div className="xp-background main-layout flex items-center justify-center">
       
       {/* The Main Glass Card */}
-      <div className="aero-glass w-[500px] h-[350px] flex flex-col p-6 relative">
+      <div className="aero-glass w-full max-w-3xl aspect-[4/3] flex flex-col p-8 relative overflow-hidden">
         
         {/* Header Text */}
-        <h2 className="text-2xl text-gray-800 font-sans mb-1 pl-2">
-          Sign Up / Log In
+        <h2 className="text-4xl text-black font-sans mb-1 pl-2 absolute top-8 left-8 z-10 tracking-tight">
+          Sign Up/ Log In
         </h2>
 
         {/* The Purple User Icon (Visual) */}
-        <div className="absolute top-10 right-10 bg-gradient-to-b from-purple-400 to-purple-800 rounded-full p-1 border-2 border-white shadow-lg">
-           <div className="w-12 h-12 flex items-center justify-center text-white text-3xl">
-             👤
+        <div className="absolute top-[20%] left-1/2 transform -translate-x-1/2 z-10">
+           <div className="w-24 h-24 rounded-full bg-gradient-to-b from-[#d58ce6] to-[#8e24aa] border-2 border-[#6a1b9a] shadow-[0_5px_15px_rgba(0,0,0,0.3)] flex items-center justify-center relative overflow-hidden">
+             {/* Shine */}
+             <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/60 to-transparent rounded-t-full"></div>
+             <span className="text-white text-5xl drop-shadow-md z-10">👤</span>
            </div>
         </div>
 
         {/* Form Container */}
-        <form onSubmit={handleSubmit} className="flex flex-col justify-center flex-grow mt-4 px-8 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col justify-center items-center flex-grow mt-20 space-y-6 w-full max-w-md mx-auto z-10">
           
           {/* Email Input */}
-          <div className="flex flex-col">
-            <label className="text-sm font-bold text-gray-700 mb-1 ml-1">Email</label>
+          <div className="flex items-center w-full gap-4">
+            <label className="text-2xl text-black font-sans w-32 text-right">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="aero-input w-full"
-              placeholder="user@example.com"
+              className="flex-1 h-12 rounded-xl border border-gray-400 shadow-inner px-4 text-lg outline-none focus:ring-2 focus:ring-blue-400 bg-gradient-to-b from-[#f0f0f0] to-[#ffffff]"
             />
           </div>
 
           {/* Password Input */}
-          <div className="flex flex-col">
-            <label className="text-sm font-bold text-gray-700 mb-1 ml-1">Password</label>
+          <div className="flex items-center w-full gap-4">
+            <label className="text-2xl text-black font-sans w-32 text-right">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="aero-input w-full"
-              placeholder="••••••••"
+              className="flex-1 h-12 rounded-xl border border-gray-400 shadow-inner px-4 text-lg outline-none focus:ring-2 focus:ring-blue-400 bg-gradient-to-b from-[#f0f0f0] to-[#ffffff]"
             />
           </div>
 
-          {/* BYPASS TOGGLE (For your testing) */}
-          <div className="flex items-center mt-2">
+          {/* BYPASS TOGGLE (Hidden or small) */}
+          <div className="flex items-center mt-2 opacity-50 hover:opacity-100 transition-opacity">
             <input 
               type="checkbox" 
               id="bypass" 
@@ -77,21 +77,30 @@ const LoginPage = () => {
               className="mr-2"
             />
             <label htmlFor="bypass" className="text-xs text-gray-600 cursor-pointer select-none">
-              Demo Mode (Bypass Cognito)
+              Demo Mode
             </label>
           </div>
 
         </form>
 
         {/* Bottom Right Action Button (The Blue Arrow) */}
-        <div className="absolute bottom-6 right-6">
+        <div className="absolute bottom-8 right-8 z-20">
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="btn-glossy-blue w-14 h-14 text-2xl transition-transform active:scale-90"
+            className="w-20 h-20 rounded-full bg-gradient-to-b from-[#6bb5ff] to-[#105cb6] border-2 border-[#0d47a1] shadow-[0_5px_15px_rgba(0,0,0,0.4)] flex items-center justify-center hover:brightness-110 active:scale-95 transition-all group"
             title="Log In"
           >
-            {isLoading ? '...' : '➔'}
+            {/* Inner Shine */}
+            <div className="absolute top-1 left-1 right-1 h-[45%] bg-gradient-to-b from-white/70 to-transparent rounded-t-full pointer-events-none"></div>
+            
+            {isLoading ? (
+                <span className="text-white font-bold">...</span>
+            ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white drop-shadow-md transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            )}
           </button>
         </div>
 

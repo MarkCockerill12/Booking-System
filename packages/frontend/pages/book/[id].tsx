@@ -35,38 +35,51 @@ const BookingPage = () => {
   if (!room) return null;
 
   return (
-    <div className="xp-background flex flex-col items-center justify-center pt-10">
-      <AeroCard title="Booking Page" className="max-w-lg p-8" showUserIcon={true}>
+    <div className="xp-background main-layout flex items-center justify-center">
+      <AeroCard title="Booking Page" className="max-w-3xl p-8 min-h-[600px]" showUserIcon={true}>
         
-        {/* Image X Placeholder */}
-        <div className="border border-black h-48 mb-6 relative bg-white">
-           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-              <line x1="0" y1="0" x2="100%" y2="100%" stroke="black" strokeWidth="1" />
-              <line x1="100%" y1="0" x2="0" y2="100%" stroke="black" strokeWidth="1" />
-           </svg>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-6 text-black">
-            <div className="col-span-2">
-                <p className="text-sm font-bold">Description</p>
-                <p className="text-sm">{room.description}</p>
-            </div>
-            <div>
-                <p className="text-sm font-bold">Capacity</p>
-                <p className="text-sm">{room.capacity}</p>
-            </div>
-            <div className="text-right">
-                 <p className="text-sm font-bold">Location</p>
-                 <p className="text-sm">{room.location}</p>
+        {/* Image X Placeholder - Centered and Large */}
+        <div className="flex justify-center mb-8">
+            <div className="border-2 border-black h-64 w-3/4 relative bg-white shadow-md">
+                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                    <line x1="0" y1="0" x2="100%" y2="100%" stroke="black" strokeWidth="2" />
+                    <line x1="100%" y1="0" x2="0" y2="100%" stroke="black" strokeWidth="2" />
+                </svg>
             </div>
         </div>
 
-        {status === 'CONFIRMED' && <div className="text-center text-green-600 font-bold mb-4">Booking Confirmed!</div>}
+        {/* Info Section */}
+        <div className="grid grid-cols-2 gap-8 mb-12 px-8 text-black font-sans">
+            {/* Left Column: Description */}
+            <div className="flex flex-col gap-2">
+                <p className="text-2xl font-medium">Description</p>
+                <p className="text-lg text-gray-700 leading-relaxed">{room.description}</p>
+            </div>
 
-        <div className="flex justify-center">
+            {/* Right Column: Capacity & Location */}
+            <div className="flex flex-col gap-6 text-right items-end">
+                <div>
+                    <p className="text-2xl font-medium">Capacity</p>
+                    <p className="text-xl text-gray-700">{room.capacity}</p>
+                </div>
+                <div>
+                    <p className="text-2xl font-medium">Location</p>
+                    <p className="text-xl text-gray-700">{room.location}</p>
+                </div>
+            </div>
+        </div>
+
+        {status === 'CONFIRMED' && (
+            <div className="text-center text-green-600 font-bold text-xl mb-6 animate-bounce">
+                Booking Confirmed!
+            </div>
+        )}
+
+        {/* Book Button */}
+        <div className="flex justify-center pb-4">
             <button 
                 onClick={handleBook}
-                className="bg-gradient-to-b from-[#5ba1ea] to-[#1b5ea6] text-white font-bold py-2 px-8 rounded-full border border-[#134a88] shadow-md active:translate-y-1"
+                className="btn-glossy-blue px-16 py-3 text-2xl rounded-full shadow-lg hover:shadow-xl transform transition-all active:scale-95 hover:brightness-110"
             >
                 Book Room
             </button>

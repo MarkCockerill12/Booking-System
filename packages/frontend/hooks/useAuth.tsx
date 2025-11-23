@@ -17,23 +17,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (email: string, pass: string, isBypass: boolean = false) => {
     setIsLoading(true);
+    console.group("🔐 [Auth] Login Attempt");
+    console.log("Email:", email);
+    console.log("Bypass Mode:", isBypass);
     
     if (isBypass) {
-      // Simulate network delay for realism
       setTimeout(() => {
-        console.log("Bypassing Cognito for Demo...");
+        console.log("✅ [Auth] Bypass Successful. Logged in as Demo User.");
         setIsAuthenticated(true);
         setUser({ username: 'Demo User', email: email || 'demo@dundee.ac.uk' });
         setIsLoading(false);
+        console.groupEnd();
       }, 800);
     } else {
-      // Place real Cognito logic here later
+      console.warn("⚠️ [Auth] Real Cognito not configured in local env.");
       alert("Cognito is currently offline. Please use the 'Bypass Login' button.");
       setIsLoading(false);
+      console.groupEnd();
     }
   };
 
   const logout = () => {
+    console.log("👋 [Auth] User Logged Out");
     setIsAuthenticated(false);
     setUser(null);
   };

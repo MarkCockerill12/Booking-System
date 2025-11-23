@@ -7,38 +7,57 @@ interface AeroCardProps {
   className?: string;
   title?: string;
   showUserIcon?: boolean;
+  padding?: boolean;
 }
 
-export const AeroCard: React.FC<AeroCardProps> = ({ children, className = '', title, showUserIcon = false }) => {
+export const AeroCard: React.FC<AeroCardProps> = ({ children, className = '', title, showUserIcon = false, padding = true }) => {
   const [isMenuOpen, setMenuOpen] = useState(false);
 
   return (
     <>
-      {/* NOTE: We use the GLOBAL 'aero-glass' class now */}
-      <div className={`aero-glass p-8 w-full max-w-3xl mx-auto ${className}`}>
+      <div className={`aero-glass p-0 w-full max-w-4xl mx-auto ${className} relative`}>
         
-        {showUserIcon && (
-          <button 
-            onClick={() => setMenuOpen(true)}
-            className="absolute top-4 right-4 text-2xl z-50 hover:scale-110 transition-transform filter drop-shadow-md"
-            title="My Bookings"
-          >
-            👤
-          </button>
-        )}
+        {/* Header Row: Title Left | Icons Right */}
+        {(title || showUserIcon) && (
+            <div className="flex justify-between items-start p-6 pb-2 border-b border-gray-400/50 z-20 relative">
+                {title ? (
+                    <h1 className="text-2xl font-bold text-black drop-shadow-sm font-sans">
+                        {title}
+                    </h1>
+                ) : <div></div>}
 
-        {title && (
-          <h1 className="text-3xl font-bold mb-6 text-blue-900 border-b border-white/50 pb-3 relative z-10">
-            {title}
-          </h1>
+                {showUserIcon && (
+                    <div className="flex gap-2">
+                        {/* Mail Icon (Yellow/Greenish in wireframe) */}
+                        <button 
+                            className="w-8 h-8 rounded-full bg-gradient-to-b from-[#e6f0a3] to-[#d2e638] border border-[#99a626] shadow-md flex items-center justify-center hover:brightness-110 active:translate-y-[1px]"
+                            title="Messages"
+                        >
+                            <span className="text-sm">✉️</span>
+                        </button>
+                        
+                        {/* User Icon (Purple in wireframe) */}
+                        <button 
+                            onClick={() => setMenuOpen(true)}
+                            className="w-8 h-8 rounded-full bg-gradient-to-b from-[#eebcfc] to-[#d363f5] border border-[#9c26b0] shadow-md flex items-center justify-center hover:brightness-110 active:translate-y-[1px]"
+                            title="My Bookings"
+                        >
+                            <span className="text-sm">👤</span>
+                        </button>
+                    </div>
+                )}
+            </div>
         )}
         
-        <div className="relative z-10">
+        <div className={`aero-content relative z-10 ${padding ? 'p-6' : ''}`}>
             {children}
         </div>
-      </div>
 
-      <SideMenu isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} />
+        {/* Side Menu inside the card - Only render if user icon is enabled */}
+        {showUserIcon && (
+            <SideMenu isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} />
+        )}
+      </div>
     </>
   );
 };
