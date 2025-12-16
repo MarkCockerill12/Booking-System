@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../hooks/useAuth';
 
 interface SideMenuProps {
@@ -9,6 +10,12 @@ interface SideMenuProps {
 export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const [bookings, setBookings] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -21,11 +28,13 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  return (
-    <div className={`absolute inset-0 z-[50] overflow-hidden ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className={`fixed inset-0 z-[9999] overflow-hidden ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
       {/* Backdrop */}
       <div 
-        className={`absolute inset-0 bg-black/20 backdrop-blur-[1px] transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={onClose}
@@ -33,12 +42,13 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
 
       {/* Sliding Drawer - From Left */}
       <div 
-        className={`absolute top-0 left-0 h-full w-80 shadow-[10px_0_30px_rgba(0,0,0,0.2)] border-r border-[#aabccf] transition-transform duration-500 cubic-bezier(0.22, 1, 0.36, 1) flex flex-col ${
+        className={`absolute top-0 left-0 h-full w-80 border-r border-[#aabccf] transition-transform duration-500 flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ 
-            background: 'linear-gradient(to bottom, rgba(240, 248, 255, 0.95) 0%, rgba(230, 242, 255, 0.95) 100%)',
-            backdropFilter: 'blur(10px)'
+            background: 'linear-gradient(to bottom, #f0f8ff 0%, #e6f2ff 100%)',
+            boxShadow: '10px 0 30px rgba(0, 0, 0, 0.3)',
+            transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)'
         }}
       >
         {/* Header */}
@@ -91,6 +101,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

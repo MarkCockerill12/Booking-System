@@ -1,65 +1,90 @@
 import { useRouter } from 'next/router';
+import { useEffect, useRef } from 'react';
 import { AeroCard } from '../components/AeroCard';
+import { AeroButton } from '../components/ui/AeroButton';
+import { animate, stagger } from 'animejs';
 
 const LandingPage = () => {
   const router = useRouter();
+  const globeRef = useRef<HTMLImageElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Floating Globe Animation
+    if (globeRef.current) {
+      animate(globeRef.current, {
+        translateY: [-10, 10],
+        rotate: [0, 2],
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine',
+        duration: 3000
+      });
+    }
+
+    // Text Entrance
+    if (textRef.current) {
+      animate(textRef.current.children, {
+        opacity: [0, 1],
+        translateX: [20, 0],
+        delay: stagger(100, { start: 500 }),
+        easing: 'easeOutQuad'
+      });
+    }
+  }, []);
 
   return (
     <div className="xp-background main-layout flex flex-col items-center justify-center min-h-screen">
       
-      {/* 1. Increased width to 'max-w-6xl' to take up more screen space.
-        2. Removed 'title' prop so the "booking thing" header bar is gone.
-      */}
       <AeroCard className="max-w-6xl p-0 overflow-hidden relative" showUserIcon={false} padding={false}>
         
         {/* Info Icon (Top Right) */}
-        <div className="absolute top-4 right-4 z-20">
-            <button className="text-blue-600 hover:text-blue-800 transition-colors drop-shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
+        <div style={{ position: 'absolute', top: 0, right: 0, padding: '8px' }}>
+            <button className="hover:brightness-110 active:translate-y-1 transition-all bg-transparent border-0 p-0">
+              <img 
+                                src="/image 4.png" 
+                                alt="info" 
+                                style={{ height: '48px', width: 'auto' }}
+                                className="drop-shadow-lg"
+                            />
             </button>
         </div>
 
-        <div className="flex flex-col h-full min-h-[500px]">
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '500px' }}>
             
             {/* HEADER SECTION: Spanning full width */}
-            <div className="w-full pt-8 pb-4 text-center z-10">
+            <div className="w-full pt-4 pb-2 text-center z-10">
                 <div className="flex items-center justify-center gap-4">
                     <span className="text-5xl filter drop-shadow-md transform -rotate-12">📅</span>
-                    <h1 className="text-6xl font-extrabold text-[#5f9ea0] tracking-tight font-sans drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}>
-                        Booking System
-                    </h1>
+                    <h1 className="text-6xl font-extrabold text-[#5f9ea0] tracking-tight font-sans drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)', display: 'inline', whiteSpace: 'nowrap' }}>Booking System</h1>
                     <span className="text-5xl filter drop-shadow-md transform rotate-12">📋</span>
                 </div>
             </div>
 
             {/* CONTENT ROW */}
-            <div 
-                className="flex flex-row w-full h-full items-center"
-                style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}
-            >
+            <div style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%', alignItems: 'center' }}>
                 
                 {/* LEFT COLUMN: The Image (Globe & People) */}
                 <div 
-                    className="flex-1 flex items-center justify-center p-8 relative h-full"
-                    style={{ flex: '1 1 50%', maxWidth: '50%' }}
+                    style={{ flex: '1 1 50%', maxWidth: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', position: 'relative', height: '100%' }}
                 >
                     <img 
+                        ref={globeRef}
                         src="/globe-people.png" 
                         alt="World Map with Users" 
-                        className="w-full max-w-[350px] h-auto object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-700"
+                        style={{ maxWidth: '300px', width: '100%', height: 'auto' }}
+                        className="object-contain drop-shadow-2xl"
                     />
                 </div>
 
                 {/* RIGHT COLUMN: Text & Actions */}
                 <div 
-                    className="flex-1 p-12 flex flex-col justify-center text-left h-full"
-                    style={{ flex: '1 1 50%', maxWidth: '50%' }}
+                    ref={textRef}
+                    style={{ flex: '1 1 50%', maxWidth: '50%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '1.5rem', height: '100%', position: 'relative' }}
                 >
                     
                     {/* Main Text */}
-                    <div className="mb-10 pr-8">
+                    <div className="mb-6 pr-4 text-left">
                         <p className="text-4xl text-black font-medium leading-tight mb-6" style={{ fontFamily: 'Segoe UI, sans-serif' }}>
                             Join our worldwide conference room booking system
                         </p>
@@ -69,12 +94,17 @@ const LandingPage = () => {
                     </div>
 
                     {/* Action Button */}
-                    <div>
-                        <button 
-                            className="btn-glossy-green px-12 py-4 text-2xl rounded-full shadow-xl hover:shadow-2xl transform transition-all active:scale-95 hover:brightness-110" 
+                    <div className="text-left">
+                        <button
                             onClick={() => router.push('/login')}
+                            className="hover:brightness-110 active:translate-y-1 transition-all duration-150 bg-transparent border-0 p-0"
                         >
-                            Get Started
+                            <img 
+                                src="/Skeumorphic Button 01.png" 
+                                alt="Get Started" 
+                                style={{ height: '48px', width: 'auto' }}
+                                className="drop-shadow-lg"
+                            />
                         </button>
                     </div>
 

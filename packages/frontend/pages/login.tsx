@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
+import { AeroInput } from '../components/ui/AeroInput';
+import { createTimeline, stagger } from 'animejs';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -9,11 +11,47 @@ const LoginPage = () => {
   const router = useRouter();
   const { isAuthenticated, login, isLoading } = useAuth();
 
+  // Refs for animation
+  const cardRef = useRef<HTMLDivElement>(null);
+  const userIconRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (isAuthenticated) {
       router.push('/search');
     }
   }, [isAuthenticated, router]);
+
+  // Entrance Animation
+  useEffect(() => {
+    const timeline = createTimeline({
+      duration: 1000
+    });
+
+    timeline
+    .add(cardRef.current, {
+      opacity: [0, 1],
+      scale: [0.9, 1],
+      duration: 800
+    })
+    .add(userIconRef.current, {
+      translateY: [-50, 0],
+      opacity: [0, 1],
+      duration: 800
+    }, '-=600')
+    .add(formRef.current?.children, {
+      translateY: [20, 0],
+      opacity: [0, 1],
+      delay: stagger(100)
+    }, '-=600')
+    .add(buttonRef.current, {
+      scale: [0, 1],
+      opacity: [0, 1],
+      rotate: '1turn'
+    }, '-=400');
+
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,15 +64,15 @@ const LoginPage = () => {
     <div className="xp-background main-layout flex items-center justify-center">
       
       {/* The Main Glass Card */}
-      <div className="aero-glass w-full max-w-3xl aspect-[4/3] flex flex-col p-8 relative overflow-hidden">
+      <div ref={cardRef} className="aero-glass w-full max-w-3xl aspect-[4/3] flex flex-col p-8 relative overflow-hidden opacity-0">
         
         {/* Header Text */}
-        <h2 className="text-4xl text-black font-sans mb-1 pl-2 absolute top-8 left-8 z-10 tracking-tight">
+        <h2 className="text-4xl text-black font-sans mb-1 pl-2 absolute top-8 left-8 z-10 tracking-tight drop-shadow-sm">
           Sign Up/ Log In
         </h2>
 
         {/* The Purple User Icon (Visual) */}
-        <div className="absolute top-[20%] left-1/2 transform -translate-x-1/2 z-10">
+        <div ref={userIconRef} className="absolute top-[20%] left-1/2 transform -translate-x-1/2 z-10 opacity-0">
            <div className="w-24 h-24 rounded-full bg-gradient-to-b from-[#d58ce6] to-[#8e24aa] border-2 border-[#6a1b9a] shadow-[0_5px_15px_rgba(0,0,0,0.3)] flex items-center justify-center relative overflow-hidden">
              {/* Shine */}
              <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/60 to-transparent rounded-t-full"></div>
@@ -43,32 +81,36 @@ const LoginPage = () => {
         </div>
 
         {/* Form Container */}
-        <form onSubmit={handleSubmit} className="flex flex-col justify-center items-center flex-grow mt-20 space-y-6 w-full max-w-md mx-auto z-10">
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col justify-center items-center flex-grow mt-20 space-y-6 w-full max-w-md mx-auto z-10">
           
           {/* Email Input */}
-          <div className="flex items-center w-full gap-4">
-            <label className="text-2xl text-black font-sans w-32 text-right">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 h-12 rounded-xl border border-gray-400 shadow-inner px-4 text-lg outline-none focus:ring-2 focus:ring-blue-400 bg-gradient-to-b from-[#f0f0f0] to-[#ffffff]"
-            />
+          <div className="flex items-center w-full gap-4 opacity-0">
+            <label className="text-2xl text-black font-sans w-32 text-right drop-shadow-sm">Email</label>
+            <div className="flex-1">
+                <AeroInput
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 text-lg"
+                />
+            </div>
           </div>
 
           {/* Password Input */}
-          <div className="flex items-center w-full gap-4">
-            <label className="text-2xl text-black font-sans w-32 text-right">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="flex-1 h-12 rounded-xl border border-gray-400 shadow-inner px-4 text-lg outline-none focus:ring-2 focus:ring-blue-400 bg-gradient-to-b from-[#f0f0f0] to-[#ffffff]"
-            />
+          <div className="flex items-center w-full gap-4 opacity-0">
+            <label className="text-2xl text-black font-sans w-32 text-right drop-shadow-sm">Password</label>
+            <div className="flex-1">
+                <AeroInput
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12 text-lg"
+                />
+            </div>
           </div>
 
           {/* BYPASS TOGGLE (Hidden or small) */}
-          <div className="flex items-center mt-2 opacity-50 hover:opacity-100 transition-opacity">
+          <div className="flex items-center mt-2 opacity-0 hover:opacity-100 transition-opacity">
             <input 
               type="checkbox" 
               id="bypass" 
@@ -86,20 +128,23 @@ const LoginPage = () => {
         {/* Bottom Right Action Button (The Blue Arrow) */}
         <div className="absolute bottom-8 right-8 z-20">
           <button
+            ref={buttonRef}
             onClick={handleSubmit}
             disabled={isLoading}
-            className="w-20 h-20 rounded-full bg-gradient-to-b from-[#6bb5ff] to-[#105cb6] border-2 border-[#0d47a1] shadow-[0_5px_15px_rgba(0,0,0,0.4)] flex items-center justify-center hover:brightness-110 active:scale-95 transition-all group"
+            className="hover:brightness-110 active:scale-95 transition-all opacity-0 bg-transparent border-0 p-0"
             title="Log In"
           >
-            {/* Inner Shine */}
-            <div className="absolute top-1 left-1 right-1 h-[45%] bg-gradient-to-b from-white/70 to-transparent rounded-t-full pointer-events-none"></div>
-            
             {isLoading ? (
-                <span className="text-white font-bold">...</span>
+                <div className="rounded-full bg-gradient-to-b from-[#6bb5ff] to-[#105cb6] flex items-center justify-center" style={{ width: '48px', height: '48px' }}>
+                    <span className="text-white font-bold text-xs">...</span>
+                </div>
             ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white drop-shadow-md transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
+                <img 
+                    src="/Aero Circle 01.png" 
+                    alt="Log In" 
+                    style={{ width: '48px', height: '48px' }}
+                    className="drop-shadow-lg"
+                />
             )}
           </button>
         </div>

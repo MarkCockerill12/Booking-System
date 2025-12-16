@@ -1,10 +1,12 @@
 // packages/frontend/pages/search.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { AeroCard } from '../components/AeroCard';
 import { RoomCard } from '../components/RoomCard';
+import { AeroButton } from '../components/ui/AeroButton';
+import { animate, stagger } from 'animejs';
 
 interface Room {
   id: string;
@@ -23,6 +25,7 @@ const SearchPage = () => {
   
   const [rooms, setRooms] = useState<Room[]>([]);
   const [location, setLocation] = useState('All');
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isAuthenticated) router.push('/login');
@@ -36,10 +39,20 @@ const SearchPage = () => {
     fetchRooms();
   }, [callApi]);
 
-  const filteredRooms = rooms.filter(r => location === 'All' || r.location.includes(location));
+  // Staggered animation for room cards when they load or change
+  useEffect(() => {
+    if (gridRef.current && rooms.length > 0) {
+      animate(gridRef.current.children, {
+        opacity: [0, 1],
+        translateY: [20, 0],
+        delay: stagger(100),
+        easing: 'spring(1, 80, 10, 0)',
+        duration: 800
+      });
+    }
+  }, [rooms, location]);
 
-  // Frutiger Aero / Windows Button Style
-  const btnClass = "px-4 py-1 bg-gradient-to-b from-[#fcfcfc] to-[#e0e0e0] border border-[#707070] rounded-lg text-sm font-medium text-black shadow-sm cursor-pointer hover:brightness-105 active:translate-y-[1px] select-none";
+  const filteredRooms = rooms.filter(r => location === 'All' || r.location.includes(location));
 
   return (
     <div className="xp-background main-layout">
@@ -47,15 +60,15 @@ const SearchPage = () => {
         
         {/* Filters Bar */}
         <div className="flex items-center gap-3 mb-2 mt-2">
-            <button className={btnClass}>Filters</button>
-            <button className={btnClass}>Capacity</button>
+            <button className="px-4 py-1 bg-gradient-to-b from-[#fcfcfc] to-[#e0e0e0] border border-[#707070] rounded-lg text-sm font-medium text-black shadow-sm hover:brightness-105 active:translate-y-[1px]">Filters</button>
+            <button className="px-4 py-1 bg-gradient-to-b from-[#fcfcfc] to-[#e0e0e0] border border-[#707070] rounded-lg text-sm font-medium text-black shadow-sm hover:brightness-105 active:translate-y-[1px]">Capacity</button>
             
             {/* Location Filter (Styled as button) */}
             <div className="relative">
                 <select 
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className={`${btnClass} appearance-none pr-8 outline-none`}
+                    className="appearance-none pl-4 pr-8 py-1 bg-gradient-to-b from-[#fcfcfc] to-[#e0e0e0] border border-[#707070] rounded-lg text-sm font-medium text-black shadow-sm cursor-pointer hover:brightness-105 active:translate-y-[1px] outline-none focus:ring-2 focus:ring-blue-400/50"
                 >
                     <option value="All">Location</option>
                     <option value="Dundee">Dundee</option>
@@ -65,13 +78,8 @@ const SearchPage = () => {
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-xs text-gray-600">▼</div>
             </div>
 
-            <button className={btnClass}>Day</button>
+            <button className="px-4 py-1 bg-gradient-to-b from-[#fcfcfc] to-[#e0e0e0] border border-[#707070] rounded-lg text-sm font-medium text-black shadow-sm hover:brightness-105 active:translate-y-[1px]">Day</button>
             
-            {/* Globe Icon with Magnifying Glass */}
-            <div className="ml-2 relative">
-                <span className="text-3xl filter drop-shadow-sm">🌍</span>
-                <span className="text-xl absolute -bottom-1 -right-1 transform -scale-x-100">🔍</span>
-            </div>
         </div>
 
         {/* Divider Line */}
@@ -79,14 +87,20 @@ const SearchPage = () => {
 
         {/* Grid Results */}
         {isLoading ? (
-             <div className="text-center text-black py-10 text-xl">Loading...</div>
+             <div className="text-center text-black py-10 text-xl flex flex-col items-center gap-4">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                Loading...
+             </div>
         ) : (
             <div 
+                ref={gridRef}
                 className="grid gap-6 px-2 pb-4"
                 style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%' }}
             >
                 {filteredRooms.map((room) => (
-                    <RoomCard key={room.id} room={room} />
+                    <div key={room.id} className="opacity-0"> {/* Wrapper for animation initial state */}
+                        <RoomCard room={room} />
+                    </div>
                 ))}
             </div>
         )}
