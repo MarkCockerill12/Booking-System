@@ -262,7 +262,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../backend/dist/financial/
-      Handler: index.handler
+      Handler: index.sqsHandler
       Events:
         PaymentQueue:
           Type: SQS
