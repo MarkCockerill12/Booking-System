@@ -150,6 +150,27 @@ Resources:
         - AttributeName: rule_id
           KeyType: HASH
 
+  PaymentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: payments
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: bookingId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: booking-index
+          KeySchema:
+            - AttributeName: bookingId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
   # S3 Bucket for Room Images
   RoomImagesBucket:
     Type: AWS::S3::Bucket
@@ -190,6 +211,12 @@ Resources:
     Properties:
       CodeUri: ../backend/dist/booking/
       Handler: index.handler
+      Environment:
+        Variables:
+          BOOKINGS_TABLE: !Ref BookingsTable
+          ROOMS_TABLE: !Ref RoomsTable
+          PRICING_RULES_TABLE: !Ref PricingRulesTable
+          PAYMENT_QUEUE_URL: !Ref PaymentQueue
       Events:
         CreateBooking:
           Type: Api
@@ -206,6 +233,10 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref RoomsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PricingRulesTable
         - SQSSendMessagePolicy:
             QueueName: !GetAtt PaymentQueue.QueueName
 
@@ -241,9 +272,16 @@ Resources:
       Environment:
         Variables:
           STRIPE_SECRET_KEY: !Sub '{{resolve:secretsmanager:stripe-api-key:SecretString:secret_key}}'
+          PAYMENTS_TABLE: !Ref PaymentsTable
+          BOOKINGS_TABLE: !Ref BookingsTable
+          NOTIFICATION_TOPIC_ARN: !Ref NotificationTopic
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PaymentsTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt NotificationTopic.TopicName
 
   # Notification Service (SNS Triggered)
   NotificationFunction:

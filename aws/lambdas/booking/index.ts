@@ -1,12 +1,16 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
-import { DynamoDBDocumentClient, PutCommand, QueryCommand, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb"
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, GetCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb"
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs"
 import { v4 as uuidv4 } from "uuid"
 
 const client = new DynamoDBClient({ region: process.env.AWS_REGION || "us-east-1" })
 const dynamo = DynamoDBDocumentClient.from(client)
+const sqsClient = new SQSClient({ region: process.env.AWS_REGION || "us-east-1" })
 
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE!
 const ROOMS_TABLE = process.env.ROOMS_TABLE!
+const PRICING_RULES_TABLE = process.env.PRICING_RULES_TABLE!
+const PAYMENT_QUEUE_URL = process.env.PAYMENT_QUEUE_URL!
 
 interface BookingEvent {
   httpMethod: string
@@ -15,6 +19,15 @@ interface BookingEvent {
   headers: Record<string, string>
   queryStringParameters?: Record<string, string>
   pathParameters?: Record<string, string>
+  requestContext?: {
+    authorizer?: {
+      claims?: {
+        sub?: string
+        "cognito:username"?: string
+        email?: string
+      }
+    }
+  }
 }
 
 const corsHeaders = {
@@ -23,16 +36,27 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
 }
 
-// Extract user ID from Cognito JWT token
-function getUserIdFromToken(authHeader?: string): string | null {
-  if (!authHeader) return null
-  const token = authHeader.replace("Bearer ", "")
-  try {
-    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString())
-    return payload.sub || payload["cognito:username"]
-  } catch {
-    return null
+// Extract user ID from Cognito Authorizer (secure method)
+function getUserIdFromAuthorizer(event: BookingEvent): string | null {
+  const claims = event.requestContext?.authorizer?.claims
+  if (!claims) return null
+  return claims.sub || claims["cognito:username"] || null
+}
+
+/**
+ * Get weather forecast (helper for dynamic pricing)
+ * In production, this would make an HTTP call to the Weather Lambda
+ * For now, returns dummy temperature data
+ */
+async function getWeatherForecast(location: string, date: string): Promise<number> {
+  // TODO: In production, call Weather Lambda via HTTP or internal invocation
+  // For now, return a dummy temperature
+  const dummyTemperatures: { [key: string]: number } = {
+    "Building A, Floor 3": 27,
+    "Building B, Floor 2": 22,
+    "Main Campus": 30,
   }
+  return dummyTemperatures[location] || 20
 }
 
 export const handler = async (event: BookingEvent) => {
@@ -44,7 +68,7 @@ export const handler = async (event: BookingEvent) => {
       return { statusCode: 200, headers: corsHeaders, body: "" }
     }
 
-    const userId = getUserIdFromToken(event.headers.Authorization || event.headers.authorization)
+    const userId = getUserIdFromAuthorizer(event)
 
     // POST /bookings - Create booking
     if (method === "POST" && path === "/bookings") {
@@ -89,15 +113,42 @@ export const handler = async (event: BookingEvent) => {
       const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
       const basePrice = room.pricePerHour * hours
 
-      // Create booking
+      // DYNAMIC PRICING: Fetch weather forecast for the booking date
+      const bookingDate = startTime.split("T")[0] // Extract date from ISO string
+      const temperature = await getWeatherForecast(room.location, bookingDate)
+
+      // DYNAMIC PRICING: Fetch pricing rules from DynamoDB
+      const pricingRulesResult = await dynamo.send(
+        new ScanCommand({
+          TableName: PRICING_RULES_TABLE,
+        })
+      )
+
+      let surchargeMultiplier = 1.0
+      const pricingRules = pricingRulesResult.Items || []
+
+      // Apply temperature-based surcharge
+      for (const rule of pricingRules) {
+        if (rule.type === "temperature") {
+          if (temperature > 25 && rule.condition === "high") {
+            surchargeMultiplier += rule.surchargePercent / 100
+          } else if (temperature < 15 && rule.condition === "low") {
+            surchargeMultiplier += rule.surchargePercent / 100
+          }
+        }
+      }
+
+      const totalPrice = basePrice * surchargeMultiplier
+
+      // Create booking with PENDING status
       const booking = {
         id: uuidv4(),
         userId,
         roomId,
         startTime,
         endTime,
-        status: "pending",
-        totalPrice: basePrice,
+        status: "PENDING",
+        totalPrice,
         createdAt: new Date().toISOString(),
       }
 
@@ -107,6 +158,30 @@ export const handler = async (event: BookingEvent) => {
           Item: booking,
         })
       )
+
+      // ASYNC PAYMENT: Send message to SQS payment queue
+      const userEmail = event.requestContext?.authorizer?.claims?.email || "unknown@example.com"
+      
+      await sqsClient.send(
+        new SendMessageCommand({
+          QueueUrl: PAYMENT_QUEUE_URL,
+          MessageBody: JSON.stringify({
+            type: "process_payment",
+            data: {
+              bookingId: booking.id,
+              amount: totalPrice,
+              userId,
+              userEmail,
+              roomId,
+              roomName: room.name,
+              startTime,
+              endTime,
+            },
+          }),
+        })
+      )
+
+      console.log(`Payment message sent to queue for booking ${booking.id}`)
 
       return {
         statusCode: 201,

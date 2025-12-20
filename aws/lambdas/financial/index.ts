@@ -11,12 +11,15 @@ import {
   PutItemCommand,
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
+import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import Stripe from 'stripe';
 
 const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const snsClient = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const PAYMENTS_TABLE = process.env.PAYMENTS_TABLE || 'payments';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
+const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN || '';
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
@@ -160,6 +163,32 @@ async function processPayment(paymentRequest: PaymentRequest): Promise<ApiRespon
           },
         })
       );
+
+      // ASYNC NOTIFICATION: Publish booking confirmation to SNS topic
+      if (NOTIFICATION_TOPIC_ARN) {
+        try {
+          await snsClient.send(
+            new PublishCommand({
+              TopicArn: NOTIFICATION_TOPIC_ARN,
+              Message: JSON.stringify({
+                type: 'booking_confirmation',
+                bookingId,
+                userId,
+                userEmail,
+                paymentId,
+                amount,
+                currency,
+                timestamp: now,
+              }),
+              Subject: 'Booking Confirmed',
+            })
+          );
+          console.log(`Notification published to SNS for booking ${bookingId}`);
+        } catch (snsError) {
+          console.error('Failed to publish SNS notification:', snsError);
+          // Don't throw - notification failure shouldn't fail the payment
+        }
+      }
     }
 
     return {
