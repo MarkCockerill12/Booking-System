@@ -1,4 +1,5 @@
-const API_URL = "/api" // Next.js API routes are relative
+// Use AWS API Gateway URL in production, local /api routes in development
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api"
 
 export async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers: HeadersInit = {
@@ -6,10 +7,18 @@ export async function apiRequest<T = any>(endpoint: string, options: RequestInit
     ...options.headers,
   }
 
+  // Add auth token from localStorage if available (for AWS backend)
+  if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_API_URL) {
+    const token = localStorage.getItem("authToken")
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+  }
+
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,
-    credentials: "include", // Include cookies for auth
+    credentials: process.env.NEXT_PUBLIC_API_URL ? "omit" : "include", // No credentials for AWS, include for local
   })
 
   const data = await response.json()

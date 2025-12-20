@@ -1,31 +1,24 @@
 # Vercel Ignore - Frontend Only Deployment
-# This file tells Vercel to ignore backend-related files during deployment
+# Backend runs entirely on AWS Lambda
 
-# Backend directories
-backend/
+# Local development backend (not needed in production)
+app/api/
+app/lib/database.ts
+app/lib/auth.ts
+
+# AWS backend (deployed separately via SAM)
 aws/
 
-# Backend configuration
-samconfig.toml
+# Local development data
+data/
 
-# Docker files
+# Docker files (not used)
 Dockerfile
 docker-compose.yml
 
-# DevOps scripts
-scripts/deploy-aws.sh
-
-# Test files
-tests/
-*.test.ts
-*.test.tsx
-jest.config.json
-
-# Documentation (optional - remove if you want docs deployed)
-AWS-DEPLOYMENT-CHECKLIST.md
-DEPLOYMENT.md
-
-# Local development files
+# Environment files
 .env.local
 .env.example
-data/db.json
+
+# SAM configuration
+samconfig.toml

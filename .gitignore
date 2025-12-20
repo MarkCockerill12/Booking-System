@@ -26,6 +26,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# local development backend (don't upload - AWS is the real backend)
+/app/api/
+/app/lib/database.ts
+/app/lib/auth.ts
+
 # local development data
 /data/
 /backend/data/

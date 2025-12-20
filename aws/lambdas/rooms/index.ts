@@ -1,6 +1,253 @@
-export const handler = async () => {
-  return {
-    statusCode: 501,
-    body: JSON.stringify({ message: "Use local Express server for development" }),
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
+import {
+  DynamoDBClient,
+  ScanCommand,
+  GetItemCommand,
+  QueryCommand,
+} from '@aws-sdk/client-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
+
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const ROOMS_TABLE = process.env.ROOMS_TABLE || 'conference-rooms';
+const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
+
+interface Room {
+  id: string;
+  name: string;
+  capacity: number;
+  location: string;
+  amenities: string[];
+  pricePerHour: number;
+  imageUrl?: string;
+  description?: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+  'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+};
+
+/**
+ * Parse and verify Cognito JWT token from Authorization header
+ */
+function parseAuthToken(event: APIGatewayProxyEvent): string | null {
+  const authHeader = event.headers?.Authorization || event.headers?.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  return authHeader.substring(7);
+}
+
+/**
+ * Check if a room is available for a specific date range
+ */
+async function isRoomAvailable(
+  roomId: string,
+  startDate?: string,
+  endDate?: string
+): Promise<boolean> {
+  if (!startDate || !endDate) {
+    return true; // If no date range specified, consider available
+  }
+
+  try {
+    const command = new QueryCommand({
+      TableName: BOOKINGS_TABLE,
+      IndexName: 'RoomIdIndex',
+      KeyConditionExpression: 'roomId = :roomId',
+      FilterExpression: 'bookingStatus = :status AND (startTime < :endDate AND endTime > :startDate)',
+      ExpressionAttributeValues: {
+        ':roomId': { S: roomId },
+        ':status': { S: 'confirmed' },
+        ':startDate': { S: startDate },
+        ':endDate': { S: endDate },
+      },
+    });
+
+    const result = await dynamoClient.send(command);
+    return !result.Items || result.Items.length === 0;
+  } catch (error) {
+    console.error('Error checking room availability:', error);
+    return false;
   }
 }
+
+/**
+ * Get all rooms with optional filters
+ */
+async function getRooms(
+  capacity?: number,
+  location?: string,
+  startDate?: string,
+  endDate?: string
+): Promise<ApiResponse> {
+  try {
+    const command = new ScanCommand({
+      TableName: ROOMS_TABLE,
+    });
+
+    const result = await dynamoClient.send(command);
+    
+    if (!result.Items) {
+      return { success: true, data: [] };
+    }
+
+    let rooms: Room[] = result.Items.map((item) => unmarshall(item) as Room);
+
+    // Apply filters
+    if (capacity) {
+      rooms = rooms.filter((room) => room.capacity >= capacity);
+    }
+
+    if (location) {
+      rooms = rooms.filter(
+        (room) => room.location.toLowerCase().includes(location.toLowerCase())
+      );
+    }
+
+    // Check availability if date range provided
+    if (startDate && endDate) {
+      const availabilityChecks = await Promise.all(
+        rooms.map(async (room) => ({
+          room,
+          available: await isRoomAvailable(room.id, startDate, endDate),
+        }))
+      );
+      rooms = availabilityChecks
+        .filter((check) => check.available)
+        .map((check) => check.room);
+    }
+
+    return {
+      success: true,
+      data: rooms.sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch rooms',
+    };
+  }
+}
+
+/**
+ * Get a single room by ID
+ */
+async function getRoomById(roomId: string): Promise<ApiResponse> {
+  try {
+    const command = new GetItemCommand({
+      TableName: ROOMS_TABLE,
+      Key: {
+        id: { S: roomId },
+      },
+    });
+
+    const result = await dynamoClient.send(command);
+
+    if (!result.Item) {
+      return {
+        success: false,
+        error: 'Room not found',
+      };
+    }
+
+    const room = unmarshall(result.Item) as Room;
+
+    return {
+      success: true,
+      data: room,
+    };
+  } catch (error) {
+    console.error('Error fetching room:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch room',
+    };
+  }
+}
+
+/**
+ * Main Lambda handler
+ */
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: Context
+): Promise<APIGatewayProxyResult> => {
+  console.log('Event:', JSON.stringify(event, null, 2));
+
+  // Handle OPTIONS request for CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: '',
+    };
+  }
+
+  try {
+    const pathParts = event.path.split('/').filter(Boolean);
+    const method = event.httpMethod;
+
+    // GET /rooms or GET /rooms?capacity=10&location=NYC
+    if (method === 'GET' && pathParts.length === 1 && pathParts[0] === 'rooms') {
+      const capacity = event.queryStringParameters?.capacity
+        ? parseInt(event.queryStringParameters.capacity)
+        : undefined;
+      const location = event.queryStringParameters?.location;
+      const startDate = event.queryStringParameters?.startDate;
+      const endDate = event.queryStringParameters?.endDate;
+
+      const result = await getRooms(capacity, location, startDate, endDate);
+
+      return {
+        statusCode: result.success ? 200 : 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(result),
+      };
+    }
+
+    // GET /rooms/:id
+    if (method === 'GET' && pathParts.length === 2 && pathParts[0] === 'rooms') {
+      const roomId = pathParts[1];
+      const result = await getRoomById(roomId);
+
+      return {
+        statusCode: result.success ? 200 : 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(result),
+      };
+    }
+
+    // Route not found
+    return {
+      statusCode: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        success: false,
+        error: 'Route not found',
+      }),
+    };
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return {
+      statusCode: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error',
+      }),
+    };
+  }
+};
