@@ -1,0 +1,31 @@
+# Vercel Ignore - Frontend Only Deployment
+# This file tells Vercel to ignore backend-related files during deployment
+
+# Backend directories
+backend/
+aws/
+
+# Backend configuration
+samconfig.toml
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# DevOps scripts
+scripts/deploy-aws.sh
+
+# Test files
+tests/
+*.test.ts
+*.test.tsx
+jest.config.json
+
+# Documentation (optional - remove if you want docs deployed)
+AWS-DEPLOYMENT-CHECKLIST.md
+DEPLOYMENT.md
+
+# Local development files
+.env.local
+.env.example
+data/db.json

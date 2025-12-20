@@ -1,64 +1,41 @@
+# Docker Compose for local development
+# Run with: docker-compose up
+
+version: '3.8'
+
 services:
-  dynamodb:
-    image: amazon/dynamodb-local
-    container_name: dynamo-local
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
+    volumes:
+      - ./backend/data:/app/backend/data
+      - ./.env.local:/app/.env.local
+    command: npm run dev
+
+  # Optional: DynamoDB Local for testing AWS integration
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
     ports:
       - "8000:8000"
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     volumes:
-      - "./.docker-data/dynamodb:/home/dynamodblocal/data"
+      - ./dynamodb-data:/home/dynamodblocal/data
 
-  backend:
-    build:
-      context: ./packages/backend
+  # Optional: LocalStack for testing full AWS services
+  localstack:
+    image: localstack/localstack:latest
     ports:
-      - "3001:3001"
+      - "4566:4566"
     environment:
-      - AWS_ACCESS_KEY_ID=fake
-      - AWS_SECRET_ACCESS_KEY=fake
-      - AWS_REGION=us-east-1
-      - BOOKINGS_TABLE=bookings
-      - ROOMS_TABLE=conference_rooms
-      # FIX: Point to the container name
-      - DYNAMODB_ENDPOINT=http://dynamo-local:8000
-      - AWS_SAM_LOCAL=true
-      - NEXT_PUBLIC_BYPASS_AUTH=false
-      - WEATHER_FUNC_NAME=WeatherService
-      - PAYMENTS_QUEUE_URL=fake-queue-url
-      - BOOKINGS_TOPIC_ARN=fake-topic-arn
-      - REFUNDS_QUEUE_URL=fake-refund-url
-    depends_on:
-      - dynamodb
-
-  frontend:
-    build:
-      context: ./packages/frontend
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3001 
-      - NEXT_PUBLIC_BYPASS_AUTH=false
+      - SERVICES=dynamodb,sqs,sns,ses,s3,cognito-idp
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
     volumes:
-      - ./packages/frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-
-  seeder:
-    image: node:20-alpine
-    working_dir: /work
-    volumes:
-      - ./packages/backend:/work
-    environment:
-      - AWS_ACCESS_KEY_ID=fake
-      - AWS_SECRET_ACCESS_KEY=fake
-      - AWS_REGION=us-east-1
-      # FIX: Point to the container name
-      - DYNAMODB_ENDPOINT=http://dynamo-local:8000
-    command: >
-      sh -c "npm install -g ts-node typescript && 
-             npm install &&
-             echo 'Waiting for DynamoDB...' && sleep 5 &&
-             npx ts-node scripts/seed.ts"
-    depends_on:
-      - dynamodb
+      - ./localstack-data:/tmp/localstack

@@ -1,0 +1,462 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #4a90c8;
+  --foreground: #ffffff;
+  --card: rgba(255, 255, 255, 0.85);
+  --card-foreground: #1a1a1a;
+  --popover: rgba(255, 255, 255, 0.95);
+  --popover-foreground: #1a1a1a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #14b8a6;
+  --secondary-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.6);
+  --muted-foreground: #4a5568;
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.3);
+  --input: rgba(255, 255, 255, 0.9);
+  --ring: rgba(37, 99, 235, 0.5);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 1rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  --vista-glass: rgba(255, 255, 255, 0.75);
+  --vista-glass-dark: rgba(255, 255, 255, 0.85);
+  --vista-blue: #4a90c8;
+  --vista-green: #7ec850;
+  --vista-shadow: rgba(0, 0, 0, 0.25);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --font-sans: "Segoe UI", "Tahoma", "Geneva", "Verdana", sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    antialiased: antialiased;
+    /* Add authentic Frutiger Aero background image */
+    background-image: url("/images/background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Enhanced cloud and bubble overlays */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(74, 144, 200, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Add floating bubbles animation - DISABLED for performance */
+  /* body::after {
+    content: "";
+    position: fixed;
+    bottom: -50px;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    animation: bubble-float 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  } */
+}
+
+/* Add shimmer animation for atmosphere */
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Bubble floating animation */
+@keyframes bubble-float {
+  0% {
+    bottom: -50px;
+    left: 10%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    bottom: 110vh;
+    left: 90%;
+    opacity: 0;
+  }
+}
+
+/* Vista Glass Effect - Enhanced */
+.vista-glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(255, 255, 255, 0.6) inset,
+    0 -2px 8px rgba(0, 0, 0, 0.1) inset, 0 20px 60px rgba(74, 144, 200, 0.15);
+  position: relative;
+  will-change: auto;
+}
+
+/* More dramatic glass effect with multiple shadows */
+.vista-glass-dark {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px) saturate(160%);
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  border-top-color: rgba(255, 255, 255, 0.9);
+  border-radius: calc(var(--radius) + 6px);
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.25), 0 3px 12px rgba(255, 255, 255, 0.8) inset,
+    0 -3px 12px rgba(0, 0, 0, 0.12) inset, 0 30px 90px rgba(74, 144, 200, 0.2);
+  position: relative;
+}
+
+/* Add glossy highlight overlay to all glass panels */
+.vista-glass::before,
+.vista-glass-dark::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  border-radius: inherit;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  pointer-events: none;
+}
+
+/* Vista Button - Using actual button images as reference */
+.vista-button {
+  background: linear-gradient(180deg, #6bb4f5 0%, #3a7fd8 50%, #2563eb 100%);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45), 0 2px 8px rgba(255, 255, 255, 0.7) inset, 0 -2px 6px
+    rgba(0, 0, 0, 0.25) inset;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  padding: 14px 40px;
+  transition: all 0.25s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  position: relative;
+  cursor: pointer;
+}
+
+.vista-button::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, transparent 100%);
+  border-radius: inherit;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  pointer-events: none;
+}
+
+.vista-button:hover {
+  background: linear-gradient(180deg, #7bc4ff 0%, #4a8fe8 50%, #3b7ef5 100%);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.55), 0 2px 10px rgba(255, 255, 255, 0.8) inset, 0 -2px 6px
+    rgba(0, 0, 0, 0.25) inset;
+  transform: translateY(-2px);
+}
+
+.vista-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.4), 0 1px 4px rgba(0, 0, 0, 0.35) inset;
+}
+
+/* Green button matching the Get Started button image */
+.vista-button-green {
+  background: linear-gradient(180deg, #a8e87d 0%, #7ec850 50%, #5cb85c 100%);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 6px 20px rgba(92, 184, 92, 0.45), 0 2px 8px rgba(255, 255, 255, 0.7) inset, 0 -2px 6px
+    rgba(0, 0, 0, 0.25) inset;
+}
+
+.vista-button-green:hover {
+  background: linear-gradient(180deg, #b8f88d 0%, #8ed860 50%, #6cc86c 100%);
+  box-shadow: 0 8px 24px rgba(92, 184, 92, 0.55), 0 2px 10px rgba(255, 255, 255, 0.8) inset, 0 -2px 6px
+    rgba(0, 0, 0, 0.25) inset;
+}
+
+/* Vista Input */
+.vista-input {
+  background: rgba(255, 255, 255, 0.97);
+  border: 2px solid rgba(200, 200, 200, 0.6);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 16px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.vista-input:focus {
+  outline: none;
+  border-color: #4a90c8;
+  background: white;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.12), 0 0 0 4px rgba(74, 144, 200, 0.25);
+}
+
+/* Vista Card */
+.vista-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px) saturate(150%);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(255, 255, 255, 0.6) inset, 0 -1px 4px rgba(0, 0, 0, 0.08)
+    inset;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vista-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.vista-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22), 0 3px 12px rgba(255, 255, 255, 0.7) inset, 0 -1px 4px rgba(0, 0, 0, 0.08)
+    inset;
+}
+
+/* Vista Icon using the aero circle aesthetic */
+.vista-icon {
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.85));
+  border: 3px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(255, 255, 255, 1) inset, 0 -2px 4px rgba(0, 0, 0, 0.15)
+    inset;
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vista-icon::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Animated background effects - DISABLED for performance */
+/* @keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  33% {
+    transform: translateY(-15px) translateX(10px);
+  }
+  66% {
+    transform: translateY(-5px) translateX(-10px);
+  }
+} */
+
+.vista-float {
+  /* animation: float 6s ease-in-out infinite; DISABLED */
+}
+
+.vista-float-slow {
+  /* animation: float-slow 12s ease-in-out infinite; DISABLED */
+}
+
+/* Add lens flare effect */
+@keyframes lens-flare {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
+.vista-lens-flare {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+  /* animation: lens-flare 20s ease-in-out infinite; DISABLED for performance */
+  top: -200px;
+  right: -200px;
+  z-index: 1;
+  opacity: 0.3;
+}
+
+/* Glossy overlay effect */
+.vista-glossy {
+  position: relative;
+}
+
+.vista-glossy::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Add reflection effect for premium look */
+.vista-reflection {
+  position: relative;
+}
+
+/* Add amenity badge styling */
+.vista-badge {
+  @apply px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full font-semibold shadow-lg;
+}
