@@ -12,7 +12,6 @@ import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
 const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const WEATHER_CACHE_TABLE = process.env.WEATHER_CACHE_TABLE || 'weather-cache';
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || '';
 const CACHE_TTL_HOURS = 1; // Cache weather data for 1 hour
 
 interface WeatherData {
@@ -113,121 +112,68 @@ async function saveWeatherToCache(weatherData: WeatherData): Promise<void> {
 }
 
 /**
- * Fetch weather data from OpenWeatherMap API
+ * Generate simulated weather data based on location and date
+ * This simulates a weather service for the conference room booking system
  */
-async function fetchWeatherFromAPI(
+async function generateSimulatedWeather(
   location: string,
   date: string
 ): Promise<ApiResponse> {
-  // TESTABILITY: Return deterministic mocked value when NODE_ENV=test
-  if (process.env.NODE_ENV === 'test') {
-    const weatherData: WeatherData = {
-      location,
-      date,
-      temperature: 28,
-      feelsLike: 28,
-      humidity: 50,
-      description: 'Sunny',
-      icon: '01d',
-      windSpeed: 5,
-      pressure: 1013,
-      timestamp: Date.now(),
-      ttl: Math.floor(Date.now() / 1000) + CACHE_TTL_HOURS * 3600,
-    };
-    
-    return {
-      success: true,
-      data: weatherData,
-    };
-  }
-
-  if (!OPENWEATHER_API_KEY) {
-    return {
-      success: false,
-      error: 'OpenWeatherMap API key not configured',
-    };
-  }
-
   try {
-    const targetDate = new Date(date);
-    const now = new Date();
-    const diffDays = Math.ceil(
-      (targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    let apiUrl: string;
+    // Hash location name to get consistent but varied weather per location
+    const locationHash = location.split('').reduce((acc, char) => acc + (char.codePointAt(0) || 0), 0);
     
-    // Use current weather API for today/tomorrow
-    if (diffDays <= 1) {
-      apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-        location
-      )}&appid=${OPENWEATHER_API_KEY}&units=metric`;
-    } else if (diffDays <= 7) {
-      // Use forecast API for next 5 days
-      apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
-        location
-      )}&appid=${OPENWEATHER_API_KEY}&units=metric`;
+    // Parse date to get day variation
+    const targetDate = new Date(date);
+    const dayOfYear = Math.floor((targetDate.getTime() - new Date(targetDate.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Generate deterministic but varied temperature (15-35°C range)
+    const baseTemp = 20 + (locationHash % 10);
+    const seasonalVariation = Math.sin((dayOfYear / 365) * 2 * Math.PI) * 5;
+    const dailyVariation = (dayOfYear % 7) - 3;
+    const temperature = Math.round(baseTemp + seasonalVariation + dailyVariation);
+    
+    // Generate other weather parameters
+    const humidity = 40 + ((locationHash + dayOfYear) % 40);
+    const windSpeed = 3 + ((locationHash * dayOfYear) % 15);
+    const pressure = 1000 + ((locationHash + dayOfYear) % 30);
+    
+    // Determine weather conditions based on temperature
+    let description: string;
+    let icon: string;
+    
+    if (temperature > 28) {
+      description = 'Clear sky';
+      icon = '01d';
+    } else if (temperature > 22) {
+      description = 'Partly cloudy';
+      icon = '02d';
+    } else if (temperature > 18) {
+      description = 'Cloudy';
+      icon = '03d';
+    } else if (temperature > 15) {
+      description = 'Light rain';
+      icon = '10d';
     } else {
-      return {
-        success: false,
-        error: 'Weather forecast only available for the next 7 days',
-      };
+      description = 'Overcast';
+      icon = '04d';
     }
-
-    const response = await fetch(apiUrl);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return {
-        success: false,
-        error: errorData.message || `API request failed: ${response.statusText}`,
-      };
-    }
-
-    const data = await response.json();
-
-    let weatherInfo;
-
-    if (diffDays <= 1) {
-      // Current weather response
-      weatherInfo = {
-        temperature: data.main.temp,
-        feelsLike: data.main.feels_like,
-        humidity: data.main.humidity,
-        description: data.weather[0].description,
-        icon: data.weather[0].icon,
-        windSpeed: data.wind.speed,
-        pressure: data.main.pressure,
-      };
-    } else {
-      // Forecast response - find closest forecast to target date
-      const targetTimestamp = targetDate.getTime();
-      const closestForecast = data.list.reduce((prev: any, curr: any) => {
-        const currDiff = Math.abs(curr.dt * 1000 - targetTimestamp);
-        const prevDiff = Math.abs(prev.dt * 1000 - targetTimestamp);
-        return currDiff < prevDiff ? curr : prev;
-      });
-
-      weatherInfo = {
-        temperature: closestForecast.main.temp,
-        feelsLike: closestForecast.main.feels_like,
-        humidity: closestForecast.main.humidity,
-        description: closestForecast.weather[0].description,
-        icon: closestForecast.weather[0].icon,
-        windSpeed: closestForecast.wind.speed,
-        pressure: closestForecast.main.pressure,
-      };
-    }
-
+    
     const weatherData: WeatherData = {
       location,
       date,
-      ...weatherInfo,
+      temperature,
+      feelsLike: temperature - 2,
+      humidity,
+      description,
+      icon,
+      windSpeed,
+      pressure,
       timestamp: Date.now(),
       ttl: Math.floor(Date.now() / 1000) + CACHE_TTL_HOURS * 3600,
     };
 
-    // Cache the result
+    // Cache the simulated weather
     await saveWeatherToCache(weatherData);
 
     return {
@@ -235,10 +181,10 @@ async function fetchWeatherFromAPI(
       data: weatherData,
     };
   } catch (error) {
-    console.error('Error fetching weather from API:', error);
+    console.error('Error generating simulated weather:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch weather data',
+      error: error instanceof Error ? error.message : 'Failed to generate weather data',
     };
   }
 }
@@ -273,8 +219,8 @@ async function getWeather(location: string, date: string): Promise<ApiResponse> 
     };
   }
 
-  // Fetch from API
-  return await fetchWeatherFromAPI(location, date);
+  // Generate simulated weather data
+  return await generateSimulatedWeather(location, date);
 }
 
 /**
