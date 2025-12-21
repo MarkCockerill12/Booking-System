@@ -15,8 +15,14 @@ import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import Stripe from 'stripe';
 
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
-const snsClient = new SNSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamoClient = new DynamoDBClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  endpoint: process.env.AWS_ENDPOINT || undefined,
+});
+const snsClient = new SNSClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  endpoint: process.env.AWS_ENDPOINT || undefined,
+});
 const PAYMENTS_TABLE = process.env.PAYMENTS_TABLE || 'payments';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
 const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN || '';

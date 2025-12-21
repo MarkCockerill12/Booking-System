@@ -10,12 +10,15 @@ const corsHeaders = {
 };
 
 /**
- * Generate deterministic temperature based on location
- * Simple hash-based generator for consistent results
+ * Generate deterministic temperature based on location and date
+ * Simple hash-based generator for consistent results per day
  */
-function generateTemperature(location: string): number {
-  // Hash the location string to get a consistent value
-  const hash = location.split('').reduce((acc, char) => {
+function generateTemperature(location: string, date: string): number {
+  // Combine location and date to get unique daily temperature
+  const inputString = location + (date || '');
+  
+  // Hash the combined string to get a consistent value
+  const hash = inputString.split('').reduce((acc, char) => {
     return acc + (char.charCodeAt(0) || 0);
   }, 0);
   
@@ -61,7 +64,7 @@ export const handler = async (
         };
       }
 
-      const temperature = generateTemperature(location);
+      const temperature = generateTemperature(location, date || '');
 
       return {
         statusCode: 200,

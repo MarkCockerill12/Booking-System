@@ -11,7 +11,10 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamoClient = new DynamoDBClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  endpoint: process.env.AWS_ENDPOINT || undefined,
+});
 const ROOMS_TABLE = process.env.ROOMS_TABLE || 'conference-rooms';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
 
