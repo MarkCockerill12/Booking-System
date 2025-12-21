@@ -1,16 +1,19 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
 import { DynamoDBDocumentClient, PutCommand, QueryCommand, GetCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb"
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs"
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda"
 import { v4 as uuidv4 } from "uuid"
 
 const client = new DynamoDBClient({ region: process.env.AWS_REGION || "us-east-1" })
 const dynamo = DynamoDBDocumentClient.from(client)
 const sqsClient = new SQSClient({ region: process.env.AWS_REGION || "us-east-1" })
+const lambdaClient = new LambdaClient({ region: process.env.AWS_REGION || "us-east-1" })
 
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE!
 const ROOMS_TABLE = process.env.ROOMS_TABLE!
 const PRICING_RULES_TABLE = process.env.PRICING_RULES_TABLE!
 const PAYMENT_QUEUE_URL = process.env.PAYMENT_QUEUE_URL!
+const WEATHER_FUNCTION_NAME = process.env.WEATHER_FUNCTION_NAME!
 
 interface BookingEvent {
   httpMethod: string
@@ -44,19 +47,31 @@ function getUserIdFromAuthorizer(event: BookingEvent): string | null {
 }
 
 /**
- * Get weather forecast (helper for dynamic pricing)
- * In production, this would make an HTTP call to the Weather Lambda
- * For now, returns dummy temperature data
+ * Get weather forecast by invoking Weather Lambda
+ * Calls the Weather Lambda function to get temperature data
  */
 async function getWeatherForecast(location: string, date: string): Promise<number> {
-  // TODO: In production, call Weather Lambda via HTTP or internal invocation
-  // For now, return a dummy temperature
-  const dummyTemperatures: { [key: string]: number } = {
-    "Building A, Floor 3": 27,
-    "Building B, Floor 2": 22,
-    "Main Campus": 30,
+  try {
+    const command = new InvokeCommand({
+      FunctionName: WEATHER_FUNCTION_NAME,
+      Payload: JSON.stringify({
+        httpMethod: 'GET',
+        queryStringParameters: { location, date },
+      }),
+    })
+
+    const response = await lambdaClient.send(command)
+    const payload = JSON.parse(new TextDecoder().decode(response.Payload))
+    const weatherBody = JSON.parse(payload.body)
+    const temperature = weatherBody.temperature
+
+    console.log(`Weather forecast for ${location} on ${date}: ${temperature}°C`)
+    return temperature
+  } catch (error) {
+    console.error('Error fetching weather forecast:', error)
+    // Return default temperature if service fails
+    return 20
   }
-  return dummyTemperatures[location] || 20
 }
 
 export const handler = async (event: BookingEvent) => {

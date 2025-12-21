@@ -217,6 +217,7 @@ Resources:
           ROOMS_TABLE: !Ref RoomsTable
           PRICING_RULES_TABLE: !Ref PricingRulesTable
           PAYMENT_QUEUE_URL: !Ref PaymentQueue
+          WEATHER_FUNCTION_NAME: !Ref WeatherFunction
       Events:
         CreateBooking:
           Type: Api
@@ -239,6 +240,8 @@ Resources:
             TableName: !Ref PricingRulesTable
         - SQSSendMessagePolicy:
             QueueName: !GetAtt PaymentQueue.QueueName
+        - LambdaInvokePolicy:
+            FunctionName: !Ref WeatherFunction
 
   # Weather Service
   WeatherFunction:
@@ -253,9 +256,6 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /weather/{location}
             Method: get
-      Environment:
-        Variables:
-          NODE_ENV: production
 
   # Financial Service (SQS Triggered)
   FinancialFunction:
