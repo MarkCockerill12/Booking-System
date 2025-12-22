@@ -11,7 +11,6 @@ Globals:
     MemorySize: 512
     Environment:
       Variables:
-        AWS_ENDPOINT: http://localstack:4566 # Force LocalStack endpoint globally
         LOCATIONS_TABLE: !Ref LocationsTable
         ROOMS_TABLE: !Ref RoomsTable
         BOOKINGS_TABLE: !Ref BookingsTable
@@ -350,16 +349,12 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /rooms
             Method: get
-            Auth:
-              Authorizer: NONE
         SearchRooms:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
             Path: /rooms/search
             Method: get
-            Auth:
-              Authorizer: NONE
         GetRoom:
           Type: Api
           Properties:

@@ -11,14 +11,14 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
-const dynamoClient = new DynamoDBClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  endpoint: process.env.AWS_ENDPOINT || 'http://localstack:4566', // Fallback to localstack if env var missing
-  credentials: {
-    accessKeyId: 'test',
-    secretAccessKey: 'test'
-  }
-});
+const clientConfig: any = { region: process.env.AWS_REGION || 'us-east-1' };
+
+if (process.env.AWS_ENDPOINT) {
+  clientConfig.endpoint = process.env.AWS_ENDPOINT;
+  clientConfig.credentials = { accessKeyId: 'test', secretAccessKey: 'test' };
+}
+
+const dynamoClient = new DynamoDBClient(clientConfig);
 
 const ROOMS_TABLE = process.env.ROOMS_TABLE || 'conference-rooms';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
