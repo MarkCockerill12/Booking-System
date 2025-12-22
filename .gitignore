@@ -18,8 +18,7 @@ locals.json
 .aws-sam/
 /aws/dist/
 
-# AWS SAM configuration
-samconfig.toml
+
 # Any zipped lambda code created during local setup
 *.zip
 

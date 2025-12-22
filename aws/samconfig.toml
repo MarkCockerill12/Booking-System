@@ -1,0 +1,18 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "booking-system"
+resolve_s3 = true
+s3_prefix = "booking-system"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = []
+image_repositories = []
+disable_rollback = true
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.global.parameters]
+region = "us-east-1"
