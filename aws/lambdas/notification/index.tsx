@@ -10,8 +10,20 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
-const sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const sesClient = new SESClient({ 
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: 'test',
+    secretAccessKey: 'test'
+  }
+});
+const dynamoClient = new DynamoDBClient({ 
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: 'test',
+    secretAccessKey: 'test'
+  }
+});
 
 const NOTIFICATIONS_TABLE = process.env.NOTIFICATIONS_TABLE || 'notifications';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';

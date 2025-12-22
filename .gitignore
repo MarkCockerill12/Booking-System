@@ -1,62 +1,65 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# --- Dependencies ---
+node_modules
+/.pnpm-store
 
-# dependencies
-/node_modules
-
-# next.js
+# --- Next.js ---
 /.next/
 /out/
-
-# production
 /build
+.vercel
 
-# debug
+# --- Environment & Secrets ---
+.env
+.env*.local
+locals.json
+
+# --- AWS SAM & Backend Build Artifacts ---
+# The build directory where SAM places artifacts
+.aws-sam/
+# The specific build output for your custom backend build script
+/backend/dist/
+/aws/dist/
+# AWS SAM configuration
+samconfig.toml
+# Any zipped lambda code created during local setup
+*.zip
+
+# --- Local Development Backend (DO NOT UPLOAD) ---
+# These are the local Next.js API routes used for testing
+/app/api/
+# These are local database/auth connections not needed for the real AWS backend
+/app/lib/database.ts
+/app/lib/auth.ts
+
+# --- Local Data ---
+/data/
+/backend/data/
+
+# --- Docker ---
+
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# --- IDEs & System ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- Logs & Debug ---
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# local development backend (don't upload - AWS is the real backend)
-/app/api/
-/app/lib/database.ts
-/app/lib/auth.ts
-
-# local development data
-/data/
-/backend/data/
-
-# docker (not needed for Vercel deployment)
-Dockerfile
-docker-compose.yml
-.dockerignore
-
-# aws sam build artifacts
-/.aws-sam/
-/aws/dist/
-/aws/.aws-sam/
-samconfig.toml
-
-# ide
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# os files
-.DS_Store
-Thumbs.db
-
-# test coverage
+# --- Testing ---
 /coverage/
 /.nyc_output/
+
+
+
+localstack-setup/init-infra.sh
+docker-compose.yml

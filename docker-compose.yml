@@ -1,41 +1,26 @@
-# Docker Compose for local development
-# Run with: docker-compose up
-
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-      - "3001:3001"
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
-    volumes:
-      - ./backend/data:/app/backend/data
-      - ./.env.local:/app/.env.local
-    command: npm run dev
-
-  # Optional: DynamoDB Local for testing AWS integration
-  dynamodb-local:
-    image: amazon/dynamodb-local:latest
-    ports:
-      - "8000:8000"
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-    volumes:
-      - ./dynamodb-data:/home/dynamodblocal/data
-
-  # Optional: LocalStack for testing full AWS services
   localstack:
     image: localstack/localstack:latest
     ports:
       - "4566:4566"
     environment:
-      - SERVICES=dynamodb,sqs,sns,ses,s3,cognito-idp
-      - DEBUG=1
-      - DATA_DIR=/tmp/localstack/data
+      - SERVICES=dynamodb,sqs,sns,lambda
+      - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
-      - ./localstack-data:/tmp/localstack
+      - "./localstack-setup:/etc/localstack/init/ready.d"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./aws/dist:/dist" # <--- FIXED PATH: Points to the actual build folder inside 'aws'
+
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
+    ports:
+      - "8001:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      - localstack

@@ -1,33 +1,39 @@
-// Use AWS API Gateway URL in production, local /api routes in development
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
-export async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  }
+export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
+  // Ensure we don't have double slashes
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${API_BASE_URL}${cleanEndpoint}`;
 
-  // Add auth token from localStorage if available (for AWS backend)
-  if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_API_URL) {
-    const token = localStorage.getItem("authToken")
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-  }
+  console.log(`📡 Fetching: ${url}`);
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(url, {
     ...options,
-    headers,
-    credentials: process.env.NEXT_PUBLIC_API_URL ? "omit" : "include", // No credentials for AWS, include for local
-  })
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
 
-  const data = await response.json()
+  // Check if we got HTML back (common error when hitting frontend instead of backend)
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('text/html')) {
+    const text = await response.text();
+    console.error('❌ API Error: Received HTML instead of JSON.', text.substring(0, 100));
+    throw new Error(`API returned HTML instead of JSON. Check NEXT_PUBLIC_API_URL is pointing to Port 3000.`);
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || "Request failed")
+    const errorBody = await response.text();
+    throw new Error(`API Error: ${response.status} - ${errorBody}`);
   }
 
-  return data
+  return response.json();
+}
+
+// Legacy compatibility wrapper
+export async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  return fetchAPI(endpoint, options);
 }
 
 // Auth API

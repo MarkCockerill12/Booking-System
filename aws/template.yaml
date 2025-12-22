@@ -1,14 +1,4 @@
 # AWS SAM Template for Production Deployment
-# This file defines the entire backend infrastructure as code
-# 
-# IMPORTANT: This is configured for AWS deployment
-# For local development, use the Express server in /backend
-#
-# To deploy:
-#   1. Uncomment AWS environment variables in .env.local
-#   2. Configure AWS CLI: aws configure
-#   3. Run: sam build && sam deploy --guided
-
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Conference Room Booking System - Serverless Backend
@@ -21,6 +11,7 @@ Globals:
     MemorySize: 512
     Environment:
       Variables:
+        AWS_ENDPOINT: http://localstack:4566 # Force LocalStack endpoint globally
         LOCATIONS_TABLE: !Ref LocationsTable
         ROOMS_TABLE: !Ref RoomsTable
         BOOKINGS_TABLE: !Ref BookingsTable
@@ -48,7 +39,7 @@ Resources:
           CognitoAuthorizer:
             UserPoolArn: !GetAtt UserPool.Arn
 
-  # Cognito User Pool for Authentication
+  # Cognito User Pool
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -171,7 +162,7 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  # S3 Bucket for Room Images
+  # S3 Bucket
   RoomImagesBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -182,13 +173,13 @@ Resources:
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
 
-  # SQS Queues for Async Processing
+  # SQS Queues
   PaymentQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: payment-processing-queue
       VisibilityTimeout: 300
-      MessageRetentionPeriod: 1209600  # 14 days
+      MessageRetentionPeriod: 1209600
 
   RefundQueue:
     Type: AWS::SQS::Queue
@@ -197,7 +188,7 @@ Resources:
       VisibilityTimeout: 300
       MessageRetentionPeriod: 1209600
 
-  # SNS Topic for Notifications
+  # SNS Topic
   NotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
@@ -205,11 +196,51 @@ Resources:
 
   # Lambda Functions
   
+  # Auth Service
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/auth/
+      Handler: index.handler
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref UserPool
+          COGNITO_CLIENT_ID: !Ref UserPoolClient
+      Events:
+        Signup:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/signup
+            Method: post
+            Auth:
+              Authorizer: NONE
+        Login:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/login
+            Method: post
+            Auth:
+              Authorizer: NONE
+        Logout:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/logout
+            Method: post
+        Me:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/me
+            Method: get
+
   # Booking Service
   BookingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/dist/booking/
+      CodeUri: dist/booking/  # <--- FIXED PATH
       Handler: index.handler
       Environment:
         Variables:
@@ -229,7 +260,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
-            Path: /bookings/user/{userId}
+            Path: /bookings
             Method: get
       Policies:
         - DynamoDBCrudPolicy:
@@ -247,21 +278,21 @@ Resources:
   WeatherFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/dist/weather/
+      CodeUri: dist/weather/  # <--- FIXED PATH
       Handler: index.handler
       Events:
         GetWeather:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
-            Path: /weather/{location}
+            Path: /weather
             Method: get
 
-  # Financial Service (SQS Triggered)
+  # Financial Service
   FinancialFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/dist/financial/
+      CodeUri: dist/financial/  # <--- FIXED PATH
       Handler: index.sqsHandler
       Events:
         PaymentQueue:
@@ -283,11 +314,11 @@ Resources:
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt NotificationTopic.TopicName
 
-  # Notification Service (SNS Triggered)
+  # Notification Service
   NotificationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/dist/notification/
+      CodeUri: dist/notification/  # <--- FIXED PATH
       Handler: index.handler
       Events:
         BookingNotification:
@@ -306,8 +337,12 @@ Resources:
   RoomFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../backend/dist/rooms/
+      CodeUri: dist/rooms/  # <--- FIXED PATH
       Handler: index.handler
+      Environment:
+        Variables:
+          ROOMS_TABLE: !Ref RoomsTable
+          LOCATIONS_TABLE: !Ref LocationsTable
       Events:
         ListRooms:
           Type: Api
@@ -315,12 +350,16 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /rooms
             Method: get
+            Auth:
+              Authorizer: NONE
         SearchRooms:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
             Path: /rooms/search
             Method: get
+            Auth:
+              Authorizer: NONE
         GetRoom:
           Type: Api
           Properties:

@@ -12,6 +12,7 @@ import type { Room } from "@/lib"
 import Image from "next/image"
 
 import { AeroButton } from "@/components/aero-button"
+import { BookingSidebar } from "@/components/booking-sidebar"
 
 export default function SearchPage() {
   const router = useRouter()
@@ -20,6 +21,7 @@ export default function SearchPage() {
   const [locationFilter, setLocationFilter] = useState("")
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split("T")[0])
   const [loading, setLoading] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -34,7 +36,9 @@ export default function SearchPage() {
     try {
       const response = await roomsAPI.getAll()
       if (response.success) {
-        setFilteredRooms(response.data.rooms)
+        // Handle both array directly or { rooms: [] } structure
+        const rooms = Array.isArray(response.data) ? response.data : (response.data?.rooms || [])
+        setFilteredRooms(rooms)
       }
     } catch (error: any) {
       console.error("Error fetching rooms:", error)
@@ -53,8 +57,10 @@ export default function SearchPage() {
 
       const response = await roomsAPI.getAll(filters)
       if (response.success) {
-        setFilteredRooms(response.data.rooms)
-        toast.success(`Found ${response.data.rooms.length} room(s)`)
+        // Handle both array directly or { rooms: [] } structure
+        const rooms = Array.isArray(response.data) ? response.data : (response.data?.rooms || [])
+        setFilteredRooms(rooms)
+        toast.success(`Found ${rooms.length} room(s)`)
       }
     } catch (error) {
       console.error("Search error:", error)
@@ -75,7 +81,7 @@ export default function SearchPage() {
             <AeroIconButton icon="arrow" title="Back" onClick={() => router.push("/")} />
           </div>
           <div className="flex gap-4">
-            <AeroIconButton icon="mail" title="Contact" />
+            <AeroIconButton icon="mail" title="My Bookings" onClick={() => setIsSidebarOpen(true)} />
             <AeroIconButton icon="user" title="Account / Logout" onClick={async () => {
               try {
                 await authAPI.logout()
@@ -244,6 +250,8 @@ export default function SearchPage() {
           )}
         </div>
       </div>
+      
+      <BookingSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
     </VistaLayout>
   )
 }

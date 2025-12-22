@@ -20,7 +20,7 @@ export default function LandingPage() {
     if (globeRef.current) {
       vistaFloatLoop(globeRef.current)
     }
-  }, [])
+  }, [router])
 
   return (
     <VistaLayout>
@@ -69,7 +69,7 @@ export default function LandingPage() {
                 Join our worldwide conference room booking system
               </p>
 
-              <AeroButton variant="green" size="lg" onClick={() => router.push("/search")}>
+              <AeroButton variant="green" size="lg" onClick={() => router.push("/auth")}>
                 Get Started
               </AeroButton>
             </div>

@@ -11,7 +11,7 @@ export function VistaNav() {
         className="vista-icon transition-transform hover:scale-110 p-0 w-14 h-14 flex items-center justify-center"
         title="Sign In / Sign Up"
       >
-        <Image src="/images/aero-20circle-209.png" alt="User Account" width={56} height={56} unoptimized />
+        <Image src="/images/Aero Circle 9.png" alt="User Account" width={56} height={56} unoptimized />
       </Link>
       <button
         className="vista-icon transition-transform hover:scale-110 p-0 w-14 h-14 flex items-center justify-center"

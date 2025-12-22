@@ -3,7 +3,7 @@
 import Image from "next/image"
 
 interface AeroIconButtonProps {
-  icon: "user" | "mail" | "info" | "arrow"
+  icon: "user" | "mail" | "info" | "arrow" | "x"
   onClick?: () => void
   className?: string
   title?: string
@@ -14,6 +14,7 @@ const iconMap = {
   mail: "/images/Aero Circle 10.png",
   info: "/images/image-204.png",
   arrow: "/images/Aero Circle 01.png",
+  x: "/images/Aero Circle 9.png",
 }
 
 export function AeroIconButton({ icon, onClick, className = "", title }: AeroIconButtonProps) {

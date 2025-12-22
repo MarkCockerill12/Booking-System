@@ -69,7 +69,16 @@ export const handler = async (
       return {
         statusCode: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ temperature }),
+        body: JSON.stringify({
+          success: true,
+          data: {
+            weather: {
+              temperature,
+              condition: 'Sunny', // Adding a dummy condition as well
+              location
+            }
+          }
+        }),
       };
     }
 

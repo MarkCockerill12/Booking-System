@@ -40,14 +40,16 @@ export default function BookingPage() {
       console.log("[v0] Fetching room details for:", roomId)
       const roomResponse = await roomsAPI.getById(roomId)
       if (roomResponse.success) {
-        const roomData = roomResponse.data.room
+        // Handle both direct object or { room: ... } structure
+        const roomData = roomResponse.data.room || roomResponse.data
         setRoom(roomData)
         console.log("[v0] Room data loaded:", roomData)
 
         console.log("[v0] Fetching weather for location:", roomData.location, "on date:", bookingDate)
         const weatherResponse = await weatherAPI.getByLocation(roomData.location, bookingDate)
         if (weatherResponse.success) {
-          const weatherData = weatherResponse.data.weather
+          // Handle both direct object or { weather: ... } structure
+          const weatherData = weatherResponse.data?.weather || weatherResponse.data
           console.log("[v0] Weather data loaded:", weatherData)
           setWeather(weatherData)
           

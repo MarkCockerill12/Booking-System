@@ -13,8 +13,13 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 const dynamoClient = new DynamoDBClient({
   region: process.env.AWS_REGION || 'us-east-1',
-  endpoint: process.env.AWS_ENDPOINT || undefined,
+  endpoint: process.env.AWS_ENDPOINT || 'http://localstack:4566', // Fallback to localstack if env var missing
+  credentials: {
+    accessKeyId: 'test',
+    secretAccessKey: 'test'
+  }
 });
+
 const ROOMS_TABLE = process.env.ROOMS_TABLE || 'conference-rooms';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
 
@@ -132,9 +137,12 @@ async function getRooms(
         .map((check) => check.room);
     }
 
+    const sortedRooms = [...rooms].sort((a, b) => a.name.localeCompare(b.name));
     return {
       success: true,
-      data: rooms.sort((a, b) => a.name.localeCompare(b.name)),
+      data: {
+        rooms: sortedRooms
+      },
     };
   } catch (error) {
     console.error('Error fetching rooms:', error);
@@ -170,7 +178,7 @@ async function getRoomById(roomId: string): Promise<ApiResponse> {
 
     return {
       success: true,
-      data: room,
+      data: { room },
     };
   } catch (error) {
     console.error('Error fetching room:', error);
@@ -188,6 +196,12 @@ export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
+  console.log('🚀 Room Lambda Invoked!');
+  console.log('Environment:', {
+    REGION: process.env.AWS_REGION,
+    ENDPOINT: process.env.AWS_ENDPOINT,
+    TABLE: process.env.ROOMS_TABLE
+  });
   console.log('Event:', JSON.stringify(event, null, 2));
 
   // Handle OPTIONS request for CORS
@@ -206,7 +220,7 @@ export const handler = async (
     // GET /rooms or GET /rooms?capacity=10&location=NYC
     if (method === 'GET' && pathParts.length === 1 && pathParts[0] === 'rooms') {
       const capacity = event.queryStringParameters?.capacity
-        ? parseInt(event.queryStringParameters.capacity)
+        ? Number.parseInt(event.queryStringParameters.capacity)
         : undefined;
       const location = event.queryStringParameters?.location;
       const startDate = event.queryStringParameters?.startDate;

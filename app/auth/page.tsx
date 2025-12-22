@@ -104,7 +104,7 @@ export default function AuthPage() {
           <div className="text-center mb-10">
             <div className="inline-block mb-6 vista-float-slow">
               <Image
-                src="/images/aero-20circle-209.png"
+                src="/images/Aero Circle 9.png"
                 alt="User Account"
                 width={96}
                 height={96}
@@ -115,6 +115,29 @@ export default function AuthPage() {
               {isLogin ? "Log In" : "Sign Up"}
             </h1>
           </div>
+
+          {/* Dev Mode Quick Login */}
+          {typeof window !== 'undefined' && window.location.hostname === 'localhost' && (
+            <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+              <p className="text-sm font-bold text-yellow-800 mb-2">🚀 Development Mode</p>
+              <AeroButton
+                variant="blue"
+                size="md"
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-900"
+                onClick={() => {
+                  // Set dev mode in localStorage for client-side checks
+                  localStorage.setItem('DEV_MODE', 'true');
+                  localStorage.setItem('authToken', 'dev-mode-token-12345');
+                  // Set dev mode cookie for server-side API routes
+                  document.cookie = 'dev-mode=true; path=/; max-age=86400'; // 24 hours
+                  toast.success('Dev mode activated!');
+                  router.push('/search');
+                }}
+              >
+                Quick Dev Login (Skip Auth)
+              </AeroButton>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
