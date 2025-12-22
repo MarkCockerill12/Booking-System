@@ -1,5 +1,5 @@
 // Force Port 3000 for local development to hit AWS SAM
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000";
 
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   // Ensure we don't have double slashes

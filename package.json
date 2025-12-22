@@ -6,7 +6,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "build:backend": "tsc -p aws/tsconfig.json",
-    "dev:backend": "sam local start-api -t aws/template.local.yaml --docker-network conference-room-app_default --env-vars locals.json --warm-containers EAGER",
+    "dev:backend": "sam local start-api -t aws/template.yaml --docker-network conference-room-app_default --env-vars locals.json --warm-containers EAGER",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",

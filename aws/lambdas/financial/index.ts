@@ -15,22 +15,27 @@ import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import Stripe from 'stripe';
 
-const dynamoClient = new DynamoDBClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  endpoint: process.env.AWS_ENDPOINT || undefined,
-  credentials: {
-    accessKeyId: 'test',
-    secretAccessKey: 'test'
+const getClientConfig = () => {
+  const isLocal = process.env.AWS_SAM_LOCAL === 'true';
+  const endpoint = process.env.AWS_ENDPOINT || (isLocal ? 'http://localstack:4566' : undefined);
+
+  const config: any = {
+    region: process.env.AWS_REGION || "us-east-1",
+    endpoint: endpoint,
+  };
+  
+  if (endpoint) {
+    config.credentials = {
+      accessKeyId: 'test',
+      secretAccessKey: 'test'
+    };
   }
-});
-const snsClient = new SNSClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  endpoint: process.env.AWS_ENDPOINT || undefined,
-  credentials: {
-    accessKeyId: 'test',
-    secretAccessKey: 'test'
-  }
-});
+  
+  return config;
+};
+
+const dynamoClient = new DynamoDBClient(getClientConfig());
+const snsClient = new SNSClient(getClientConfig());
 const PAYMENTS_TABLE = process.env.PAYMENTS_TABLE || 'payments';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
 const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN || '';

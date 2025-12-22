@@ -6,14 +6,26 @@ import {
   GlobalSignOutCommand,
 } from "@aws-sdk/client-cognito-identity-provider"
 
-const cognito = new CognitoIdentityProviderClient({ 
-  region: process.env.AWS_REGION || "us-east-1",
-  endpoint: process.env.AWS_ENDPOINT || undefined,
-  credentials: {
-    accessKeyId: 'test',
-    secretAccessKey: 'test'
+const getClientConfig = () => {
+  const isLocal = process.env.AWS_SAM_LOCAL === 'true';
+  const endpoint = process.env.AWS_ENDPOINT || (isLocal ? 'http://localstack:4566' : undefined);
+
+  const config: any = {
+    region: process.env.AWS_REGION || "us-east-1",
+    endpoint: endpoint,
+  };
+  
+  if (endpoint) {
+    config.credentials = {
+      accessKeyId: 'test',
+      secretAccessKey: 'test'
+    };
   }
-})
+  
+  return config;
+};
+
+const cognito = new CognitoIdentityProviderClient(getClientConfig())
 const CLIENT_ID = process.env.COGNITO_CLIENT_ID!
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID!
 

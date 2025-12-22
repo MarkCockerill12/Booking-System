@@ -4,31 +4,29 @@ import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs"
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda"
 import { v4 as uuidv4 } from "uuid"
 
-const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  endpoint: process.env.AWS_ENDPOINT || undefined,
-  credentials: {
-    accessKeyId: 'test',
-    secretAccessKey: 'test'
+const getClientConfig = () => {
+  const isLocal = process.env.AWS_SAM_LOCAL === 'true';
+  const endpoint = process.env.AWS_ENDPOINT || (isLocal ? 'http://localstack:4566' : undefined);
+
+  const config: any = {
+    region: process.env.AWS_REGION || "us-east-1",
+    endpoint: endpoint,
+  };
+  
+  if (endpoint) {
+    config.credentials = {
+      accessKeyId: 'test',
+      secretAccessKey: 'test'
+    };
   }
-})
+  
+  return config;
+};
+
+const client = new DynamoDBClient(getClientConfig())
 const dynamo = DynamoDBDocumentClient.from(client)
-const sqsClient = new SQSClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  endpoint: process.env.AWS_ENDPOINT || undefined,
-  credentials: {
-    accessKeyId: 'test',
-    secretAccessKey: 'test'
-  }
-})
-const lambdaClient = new LambdaClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  endpoint: process.env.AWS_ENDPOINT || undefined,
-  credentials: {
-    accessKeyId: 'test',
-    secretAccessKey: 'test'
-  }
-})
+const sqsClient = new SQSClient(getClientConfig())
+const lambdaClient = new LambdaClient(getClientConfig())
 
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE!
 const ROOMS_TABLE = process.env.ROOMS_TABLE!

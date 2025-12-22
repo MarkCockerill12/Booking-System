@@ -13,10 +13,18 @@ import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 const clientConfig: any = { region: process.env.AWS_REGION || 'us-east-1' };
 
-if (process.env.AWS_ENDPOINT) {
-  clientConfig.endpoint = process.env.AWS_ENDPOINT;
+console.log('AWS_ENDPOINT:', process.env.AWS_ENDPOINT);
+console.log('AWS_SAM_LOCAL:', process.env.AWS_SAM_LOCAL);
+
+const isLocal = process.env.AWS_SAM_LOCAL === 'true';
+const endpoint = process.env.AWS_ENDPOINT || (isLocal ? 'http://localstack:4566' : undefined);
+
+if (endpoint) {
+  clientConfig.endpoint = endpoint;
   clientConfig.credentials = { accessKeyId: 'test', secretAccessKey: 'test' };
 }
+
+console.log('Client Config:', JSON.stringify(clientConfig, null, 2));
 
 const dynamoClient = new DynamoDBClient(clientConfig);
 
