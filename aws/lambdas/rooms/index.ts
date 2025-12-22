@@ -32,7 +32,7 @@ const ROOMS_TABLE = process.env.ROOMS_TABLE || 'conference-rooms';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
 
 interface Room {
-  id: string;
+  room_id: string;
   name: string;
   capacity: number;
   location: string;
@@ -80,12 +80,10 @@ async function isRoomAvailable(
   try {
     const command = new QueryCommand({
       TableName: BOOKINGS_TABLE,
-      IndexName: 'RoomIdIndex',
-      KeyConditionExpression: 'roomId = :roomId',
-      FilterExpression: 'bookingStatus = :status AND (startTime < :endDate AND endTime > :startDate)',
+      IndexName: 'room-date-index',
+      KeyConditionExpression: 'room_id = :roomId AND booking_date BETWEEN :startDate AND :endDate',
       ExpressionAttributeValues: {
         ':roomId': { S: roomId },
-        ':status': { S: 'confirmed' },
         ':startDate': { S: startDate },
         ':endDate': { S: endDate },
       },
@@ -137,7 +135,7 @@ async function getRooms(
       const availabilityChecks = await Promise.all(
         rooms.map(async (room) => ({
           room,
-          available: await isRoomAvailable(room.id, startDate, endDate),
+          available: await isRoomAvailable(room.room_id, startDate, endDate),
         }))
       );
       rooms = availabilityChecks
@@ -169,7 +167,7 @@ async function getRoomById(roomId: string): Promise<ApiResponse> {
     const command = new GetItemCommand({
       TableName: ROOMS_TABLE,
       Key: {
-        id: { S: roomId },
+        room_id: { S: roomId },
       },
     });
 

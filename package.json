@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
-    "build:backend": "tsc -p aws/tsconfig.json",
+    "build:backend": "npx esbuild aws/lambdas/booking/index.ts --bundle --platform=node --target=node20 --outfile=aws/dist/booking/index.js & npx esbuild aws/lambdas/rooms/index.ts --bundle --platform=node --target=node20 --outfile=aws/dist/rooms/index.js & npx esbuild aws/lambdas/auth/index.ts --bundle --platform=node --target=node20 --outfile=aws/dist/auth/index.js & npx esbuild aws/lambdas/financial/index.ts --bundle --platform=node --target=node20 --outfile=aws/dist/financial/index.js & npx esbuild aws/lambdas/notification/index.tsx --bundle --platform=node --target=node20 --outfile=aws/dist/notification/index.js & npx esbuild aws/lambdas/weather/index.ts --bundle --platform=node --target=node20 --outfile=aws/dist/weather/index.js",
     "dev:backend": "sam local start-api -t aws/template.yaml --docker-network conference-room-app_default --env-vars locals.json --warm-containers EAGER",
     "start": "next start",
     "lint": "next lint",
@@ -77,6 +77,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "esbuild": "^0.27.2",
     "jest": "^29.7.0",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",

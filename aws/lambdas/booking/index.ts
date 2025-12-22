@@ -160,7 +160,7 @@ export const handler = async (event: BookingEvent) => {
       const roomResult = await dynamo.send(
         new GetCommand({
           TableName: ROOMS_TABLE,
-          Key: { id: roomId },
+          Key: { room_id: roomId },
         })
       )
 

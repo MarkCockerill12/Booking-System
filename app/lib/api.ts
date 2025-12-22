@@ -61,17 +61,38 @@ export const authAPI = {
 
 // Rooms API
 export const roomsAPI = {
-  getAll: (filters?: { capacity?: number; location?: string; available?: boolean }) => {
+  getAll: async (filters?: { capacity?: number; location?: string; available?: boolean }) => {
     const params = new URLSearchParams()
     if (filters?.capacity) params.append("capacity", filters.capacity.toString())
     if (filters?.location) params.append("location", filters.location)
     if (filters?.available !== undefined) params.append("available", filters.available.toString())
 
     const query = params.toString()
-    return apiRequest(`/rooms${query ? `?${query}` : ""}`)
+    const endpoint = query ? `/rooms?${query}` : "/rooms"
+    const response = await apiRequest(endpoint)
+    
+    // Map backend room_id to frontend id
+    if (response.success && response.data?.rooms) {
+      response.data.rooms = response.data.rooms.map((room: any) => ({
+        ...room,
+        id: room.room_id || room.id
+      }))
+    }
+    return response
   },
 
-  getById: (id: string) => apiRequest(`/rooms/${id}`),
+  getById: async (id: string) => {
+    const response = await apiRequest(`/rooms/${id}`)
+    
+    // Map backend room_id to frontend id
+    if (response.success && response.data?.room) {
+      response.data.room = {
+        ...response.data.room,
+        id: response.data.room.room_id || response.data.room.id
+      }
+    }
+    return response
+  },
 }
 
 // Bookings API
