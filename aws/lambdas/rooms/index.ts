@@ -40,6 +40,7 @@ interface Room {
   pricePerHour: number;
   imageUrl?: string;
   description?: string;
+  available?: boolean;
 }
 
 interface ApiResponse {

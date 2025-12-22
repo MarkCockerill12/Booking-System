@@ -379,7 +379,7 @@ async function saveNotificationRecord(
     await dynamoClient.send(
       new PutItemCommand({
         TableName: NOTIFICATIONS_TABLE,
-        Item: marshall(record),
+        Item: marshall(record, { removeUndefinedValues: true }),
       })
     );
   } catch (error) {
