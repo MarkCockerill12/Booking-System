@@ -119,13 +119,13 @@ export const handler = async (event: BookingEvent) => {
       }
 
       const body = JSON.parse(event.body || "{}")
-      const { roomId, startTime, endTime } = body
+      const { roomId, startTime, endTime, paymentMethodId } = body
 
-      if (!roomId || !startTime || !endTime) {
+      if (!roomId || !startTime || !endTime || !paymentMethodId) {
         return {
           statusCode: 400,
           headers: corsHeaders,
-          body: JSON.stringify({ success: false, error: "Missing required fields" }),
+          body: JSON.stringify({ success: false, error: "Missing required fields: roomId, startTime, endTime, paymentMethodId" }),
         }
       }
 
@@ -231,10 +231,12 @@ export const handler = async (event: BookingEvent) => {
         new SendMessageCommand({
           QueueUrl: PAYMENT_QUEUE_URL,
           MessageBody: JSON.stringify({
-            type: "process_payment",
+            type: "payment",
             data: {
               bookingId: booking.booking_id,
               amount: totalPrice,
+              currency: "gbp",
+              paymentMethodId,
               userId,
               userEmail,
               roomId,

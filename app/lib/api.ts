@@ -120,13 +120,14 @@ export const roomsAPI = {
 
 // Bookings API
 export const bookingsAPI = {
-  create: (roomId: string, startTime: string, endTime: string) =>
+  create: (roomId: string, startTime: string, endTime: string, paymentMethodId?: string) =>
     apiRequest("/bookings", {
       method: "POST",
       body: JSON.stringify({
         roomId,
         startTime,
         endTime,
+        paymentMethodId,
       }),
     }),
 

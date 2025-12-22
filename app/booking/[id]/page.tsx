@@ -11,6 +11,7 @@ import { roomsAPI, bookingsAPI, weatherAPI, authAPI } from "@/lib/api"
 import { toast } from "sonner"
 import type { Room, WeatherData } from "@/lib"
 import { BookingSidebar } from "@/components/booking-sidebar"
+import { PaymentModal } from "@/components/payment-modal"
 import Image from "next/image"
 
 export default function BookingPage() {
@@ -27,6 +28,7 @@ export default function BookingPage() {
   const [totalPrice, setTotalPrice] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -105,64 +107,36 @@ export default function BookingPage() {
     return 30
   }
 
-  const handleBookRoom = async () => {
+  const handleBookRoom = () => {
     if (!room) return
+    setIsPaymentOpen(true)
+  }
 
+  const handlePaymentSuccess = async (paymentMethodId: string) => {
     try {
       const startDateTime = `${bookingDate}T09:00:00.000Z`
       const endDateTime = `${bookingDate}T17:00:00.000Z`
 
-      console.log("[v0] Creating booking:", {
+      console.log("[v0] Creating booking with payment:", {
         roomId,
         startDateTime,
         endDateTime,
         totalPrice,
+        paymentMethodId
       })
 
-      const response = await bookingsAPI.create(roomId, startDateTime, endDateTime)
+      const response = await bookingsAPI.create(roomId, startDateTime, endDateTime, paymentMethodId)
 
       if (response.success) {
+        setIsPaymentOpen(false)
         toast.success("Booking successful! Confirmation sent.")
         router.push("/search")
       }
     } catch (error: any) {
       console.error("[v0] Booking error:", error)
       toast.error(error.message || "Booking failed. Please try again.")
+      setIsPaymentOpen(false)
     }
-
-    /* PRODUCTION STRIPE PAYMENT CODE (COMMENTED OUT)
-    import { loadStripe } from '@stripe/stripe-js'
-    
-    const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-    
-    // Create payment intent on backend
-    const paymentResponse = await fetch('/api/payments/create-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        amount: totalPrice * 100,  // Convert to cents
-        currency: 'gbp',
-        bookingId: response.data.booking.id,
-      }),
-    })
-
-    const { clientSecret } = await paymentResponse.json()
-
-    // Confirm payment
-    const { error } = await stripe!.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: cardElement,  // Stripe card element
-      },
-    })
-
-    if (error) {
-      toast.error('Payment failed: ' + error.message)
-    } else {
-      toast.success('Payment successful! Booking confirmed.')
-      router.push('/search')
-    }
-    */
   }
 
   if (loading || !room) {
@@ -382,6 +356,12 @@ export default function BookingPage() {
         </div>
       </div>
       <BookingSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <PaymentModal 
+        isOpen={isPaymentOpen} 
+        onClose={() => setIsPaymentOpen(false)} 
+        amount={totalPrice} 
+        onPaymentSuccess={handlePaymentSuccess} 
+      />
     </VistaLayout>
   )
 }

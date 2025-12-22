@@ -65,6 +65,7 @@ describe("Booking Lambda", () => {
         startTime: "10:00",
         endTime: "12:00",
         attendees: 5,
+        paymentMethodId: "pm_123",
       }),
       requestContext: {
         authorizer: {
