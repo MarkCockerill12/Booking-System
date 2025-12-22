@@ -167,9 +167,9 @@ async function processPayment(paymentRequest: PaymentRequest): Promise<ApiRespon
         new UpdateItemCommand({
           TableName: BOOKINGS_TABLE,
           Key: {
-            id: { S: bookingId },
+            booking_id: { S: bookingId },
           },
-          UpdateExpression: 'SET paymentStatus = :status, paymentId = :paymentId, updatedAt = :updatedAt',
+          UpdateExpression: 'SET payment_status = :status, payment_id = :paymentId, updated_at = :updatedAt',
           ExpressionAttributeValues: {
             ':status': { S: 'paid' },
             ':paymentId': { S: paymentId },

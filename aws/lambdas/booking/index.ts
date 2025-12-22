@@ -131,6 +131,33 @@ export const handler = async (event: BookingEvent) => {
         }
       }
 
+      // Check for double booking
+      const bookingDate = startTime.split("T")[0] // Extract date from ISO string
+      
+      const existingBookings = await dynamo.send(
+        new QueryCommand({
+          TableName: BOOKINGS_TABLE,
+          IndexName: "room-date-index",
+          KeyConditionExpression: "room_id = :roomId AND booking_date = :bookingDate",
+          FilterExpression: "booking_status <> :cancelled AND (start_time < :endTime AND end_time > :startTime)",
+          ExpressionAttributeValues: {
+            ":roomId": roomId,
+            ":bookingDate": bookingDate,
+            ":cancelled": "CANCELLED",
+            ":startTime": startTime,
+            ":endTime": endTime,
+          },
+        })
+      )
+
+      if (existingBookings.Items && existingBookings.Items.length > 0) {
+        return {
+          statusCode: 409,
+          headers: corsHeaders,
+          body: JSON.stringify({ success: false, error: "Room is already booked for this time slot" }),
+        }
+      }
+
       // Get room details for pricing
       const roomResult = await dynamo.send(
         new GetCommand({
@@ -154,7 +181,6 @@ export const handler = async (event: BookingEvent) => {
       const basePrice = room.pricePerHour * hours
 
       // DYNAMIC PRICING: Fetch weather forecast for the booking date
-      const bookingDate = startTime.split("T")[0] // Extract date from ISO string
       const temperature = await getWeatherForecast(room.location, bookingDate)
 
       // DYNAMIC PRICING: Fetch pricing rules from DynamoDB
@@ -182,14 +208,15 @@ export const handler = async (event: BookingEvent) => {
 
       // Create booking with PENDING status
       const booking = {
-        id: uuidv4(),
-        userId,
-        roomId,
-        startTime,
-        endTime,
-        status: "PENDING",
-        totalPrice,
-        createdAt: new Date().toISOString(),
+        booking_id: uuidv4(),
+        user_id: userId,
+        room_id: roomId,
+        booking_date: bookingDate,
+        start_time: startTime,
+        end_time: endTime,
+        booking_status: "PENDING",
+        total_price: totalPrice,
+        created_at: new Date().toISOString(),
       }
 
       await dynamo.send(
@@ -208,7 +235,7 @@ export const handler = async (event: BookingEvent) => {
           MessageBody: JSON.stringify({
             type: "process_payment",
             data: {
-              bookingId: booking.id,
+              bookingId: booking.booking_id,
               amount: totalPrice,
               userId,
               userEmail,
@@ -221,7 +248,7 @@ export const handler = async (event: BookingEvent) => {
         })
       )
 
-      console.log(`Payment message sent to queue for booking ${booking.id}`)
+      console.log(`Payment message sent to queue for booking ${booking.booking_id}`)
 
       return {
         statusCode: 201,
@@ -243,18 +270,30 @@ export const handler = async (event: BookingEvent) => {
       const result = await dynamo.send(
         new QueryCommand({
           TableName: BOOKINGS_TABLE,
-          IndexName: "UserIdIndex",
-          KeyConditionExpression: "userId = :userId",
+          IndexName: "user-index",
+          KeyConditionExpression: "user_id = :userId",
           ExpressionAttributeValues: {
             ":userId": userId,
           },
         })
       )
 
+      // Map snake_case DB fields to camelCase API response
+      const bookings = (result.Items || []).map(item => ({
+        id: item.booking_id,
+        userId: item.user_id,
+        roomId: item.room_id,
+        startTime: item.start_time,
+        endTime: item.end_time,
+        status: item.booking_status,
+        totalPrice: item.total_price,
+        createdAt: item.created_at
+      }))
+
       return {
         statusCode: 200,
         headers: corsHeaders,
-        body: JSON.stringify({ success: true, data: { bookings: result.Items || [] } }),
+        body: JSON.stringify({ success: true, data: { bookings } }),
       }
     }
 
@@ -265,7 +304,7 @@ export const handler = async (event: BookingEvent) => {
       const result = await dynamo.send(
         new GetCommand({
           TableName: BOOKINGS_TABLE,
-          Key: { id: bookingId },
+          Key: { booking_id: bookingId },
         })
       )
 
@@ -277,10 +316,22 @@ export const handler = async (event: BookingEvent) => {
         }
       }
 
+      const item = result.Item
+      const booking = {
+        id: item.booking_id,
+        userId: item.user_id,
+        roomId: item.room_id,
+        startTime: item.start_time,
+        endTime: item.end_time,
+        status: item.booking_status,
+        totalPrice: item.total_price,
+        createdAt: item.created_at
+      }
+
       return {
         statusCode: 200,
         headers: corsHeaders,
-        body: JSON.stringify({ success: true, data: { booking: result.Item } }),
+        body: JSON.stringify({ success: true, data: { booking } }),
       }
     }
 
@@ -309,11 +360,8 @@ export const handler = async (event: BookingEvent) => {
       const result = await dynamo.send(
         new UpdateCommand({
           TableName: BOOKINGS_TABLE,
-          Key: { id: bookingId },
-          UpdateExpression: "SET #status = :status, updatedAt = :updatedAt",
-          ExpressionAttributeNames: {
-            "#status": "status",
-          },
+          Key: { booking_id: bookingId },
+          UpdateExpression: "SET booking_status = :status, updated_at = :updatedAt",
           ExpressionAttributeValues: {
             ":status": status,
             ":updatedAt": new Date().toISOString(),
@@ -322,10 +370,22 @@ export const handler = async (event: BookingEvent) => {
         })
       )
 
+      const item = result.Attributes!
+      const booking = {
+        id: item.booking_id,
+        userId: item.user_id,
+        roomId: item.room_id,
+        startTime: item.start_time,
+        endTime: item.end_time,
+        status: item.booking_status,
+        totalPrice: item.total_price,
+        createdAt: item.created_at
+      }
+
       return {
         statusCode: 200,
         headers: corsHeaders,
-        body: JSON.stringify({ success: true, data: { booking: result.Attributes } }),
+        body: JSON.stringify({ success: true, data: { booking } }),
       }
     }
 

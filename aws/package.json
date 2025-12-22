@@ -19,10 +19,10 @@
     "@aws-sdk/client-sqs": "^3.956.0",
     "@aws-sdk/lib-dynamodb": "^3.956.0",
     "@aws-sdk/util-dynamodb": "^3.956.0",
-    "@types/uuid": "^10.0.0",
+    "@types/uuid": "^8.3.4",
     "aws-lambda": "^1.0.7",
     "stripe": "^20.1.0",
-    "uuid": "^13.0.0"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159"
