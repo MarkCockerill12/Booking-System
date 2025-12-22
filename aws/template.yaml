@@ -198,8 +198,16 @@ Resources:
   # Auth Service
   AuthFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+          - index.ts
     Properties:
-      CodeUri: dist/auth/
+      CodeUri: lambdas/auth/
       Handler: index.handler
       Environment:
         Variables:
@@ -214,6 +222,14 @@ Resources:
             Method: post
             Auth:
               Authorizer: NONE
+        SignupOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/signup
+            Method: options
+            Auth:
+              Authorizer: NONE
         Login:
           Type: Api
           Properties:
@@ -222,24 +238,56 @@ Resources:
             Method: post
             Auth:
               Authorizer: NONE
+        LoginOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/login
+            Method: options
+            Auth:
+              Authorizer: NONE
         Logout:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
             Path: /auth/logout
             Method: post
+        LogoutOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/logout
+            Method: options
+            Auth:
+              Authorizer: NONE
         Me:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
             Path: /auth/me
             Method: get
+        MeOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/me
+            Method: options
+            Auth:
+              Authorizer: NONE
 
   # Booking Service
   BookingFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+          - index.ts
     Properties:
-      CodeUri: dist/booking/  # <--- FIXED PATH
+      CodeUri: lambdas/booking/
       Handler: index.handler
       Environment:
         Variables:
@@ -288,8 +336,16 @@ Resources:
   # Weather Service
   WeatherFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+          - index.ts
     Properties:
-      CodeUri: dist/weather/  # <--- FIXED PATH
+      CodeUri: lambdas/weather/
       Handler: index.handler
       Events:
         GetWeather:
@@ -302,8 +358,16 @@ Resources:
   # Financial Service
   FinancialFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+          - index.ts
     Properties:
-      CodeUri: dist/financial/  # <--- FIXED PATH
+      CodeUri: lambdas/financial/
       Handler: index.sqsHandler
       Events:
         PaymentQueue:
@@ -328,8 +392,16 @@ Resources:
   # Notification Service
   NotificationFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+          - index.ts
     Properties:
-      CodeUri: dist/notification/  # <--- FIXED PATH
+      CodeUri: lambdas/notification/
       Handler: index.handler
       Environment:
         Variables:
@@ -351,8 +423,16 @@ Resources:
   # Room Service
   RoomFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+          - index.ts
     Properties:
-      CodeUri: dist/rooms/  # <--- FIXED PATH
+      CodeUri: lambdas/rooms/
       Handler: index.handler
       Environment:
         Variables:
