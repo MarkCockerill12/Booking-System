@@ -1,0 +1,91 @@
+{
+  "users": [],
+  "rooms": [
+    {
+      "id": "1",
+      "name": "Azure Conference Room",
+      "description": "Large conference room with video conferencing capabilities and stunning glass windows",
+      "capacity": 20,
+      "location": "Building A, Floor 3",
+      "imageUrl": "data:image/svg+xml,%3Csvg width='600' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' style='stop-color:%233B82F6'/%3E%3Cstop offset='50%25' style='stop-color:%2306B6D4'/%3E%3Cstop offset='100%25' style='stop-color:%2310B981'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='400' fill='url(%23g)'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='48' font-family='Arial' font-weight='bold'%3EAzure%3C/text%3E%3C/svg%3E",
+      "amenities": [
+        "Projector",
+        "Whiteboard",
+        "Video Conferencing",
+        "WiFi",
+        "Coffee Machine"
+      ],
+      "pricePerHour": 50,
+      "available": true
+    },
+    {
+      "id": "2",
+      "name": "Vista Meeting Space",
+      "description": "Medium-sized meeting room perfect for team collaboration with natural lighting",
+      "capacity": 10,
+      "location": "Building B, Floor 2",
+      "imageUrl": "data:image/svg+xml,%3Csvg width='600' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' style='stop-color:%238B5CF6'/%3E%3Cstop offset='50%25' style='stop-color:%23EC4899'/%3E%3Cstop offset='100%25' style='stop-color:%23F59E0B'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='400' fill='url(%23g)'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='48' font-family='Arial' font-weight='bold'%3EVista%3C/text%3E%3C/svg%3E",
+      "amenities": [
+        "TV Screen",
+        "Whiteboard",
+        "WiFi",
+        "Air Conditioning"
+      ],
+      "pricePerHour": 35,
+      "available": true
+    },
+    {
+      "id": "3",
+      "name": "Aero Huddle Room",
+      "description": "Small intimate space for quick meetings and brainstorming sessions",
+      "capacity": 5,
+      "location": "Building A, Floor 1",
+      "imageUrl": "data:image/svg+xml,%3Csvg width='600' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' style='stop-color:%2310B981'/%3E%3Cstop offset='50%25' style='stop-color:%2306B6D4'/%3E%3Cstop offset='100%25' style='stop-color:%233B82F6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='400' fill='url(%23g)'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='48' font-family='Arial' font-weight='bold'%3EAero%3C/text%3E%3C/svg%3E",
+      "amenities": [
+        "TV Screen",
+        "WiFi",
+        "Comfortable Seating"
+      ],
+      "pricePerHour": 20,
+      "available": true
+    }
+  ],
+  "bookings": [
+    {
+      "id": "1766337947196",
+      "userId": "dev-user",
+      "roomId": "2",
+      "startTime": "2025-12-21T09:00:00.000Z",
+      "endTime": "2025-12-21T17:00:00.000Z",
+      "status": "pending",
+      "totalPrice": 280,
+      "createdAt": "2025-12-21T17:25:47.196Z"
+    },
+    {
+      "id": "1766339825189",
+      "userId": "dev-user",
+      "roomId": "1",
+      "startTime": "2025-12-21T09:00:00.000Z",
+      "endTime": "2025-12-21T17:00:00.000Z",
+      "status": "pending",
+      "totalPrice": 400,
+      "createdAt": "2025-12-21T17:57:05.189Z"
+    }
+  ],
+  "weather": [
+    {
+      "location": "Building B, Floor 2",
+      "temperature": 21.44139661614581,
+      "condition": "Rainy",
+      "humidity": 61.3999774706847,
+      "lastUpdated": "2025-12-21T17:21:56.590Z"
+    },
+    {
+      "location": "Building A, Floor 3",
+      "temperature": 22.134524238988924,
+      "condition": "Rainy",
+      "humidity": 50.8785409696348,
+      "lastUpdated": "2025-12-21T17:57:02.378Z"
+    }
+  ]
+}

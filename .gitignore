@@ -16,7 +16,7 @@ locals.json
 # --- AWS SAM & Backend Build Artifacts ---
 # The build directory where SAM places artifacts
 .aws-sam/
-
+/aws/dist/
 
 # AWS SAM configuration
 samconfig.toml
@@ -31,7 +31,7 @@ samconfig.toml
 /app/lib/auth.ts
 
 # --- Local Data ---
-/data/
+
 /backend/data/
 
 # --- Docker ---

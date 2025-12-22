@@ -1,16 +1,13 @@
-# GitHub Actions CI/CD Pipeline
-# Implements path-filtering for monorepo independent deployment
-
 name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  # Detect changed paths
+  # 1. Detect Changes (Path Filtering)
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -24,19 +21,41 @@ jobs:
           filters: |
             frontend:
               - 'app/**'
-              - 'components/**'
-              - 'lib/**'
               - 'public/**'
-              - 'next.config.mjs'
               - 'package.json'
+              - 'next.config.ts'
             backend:
-              - 'backend/**'
               - 'aws/**'
 
-  # Frontend Tests and Build
-  frontend:
+  # 2. Frontend Check (Lint & Build Test Only)
+  # We let Vercel handle the actual deployment automatically!
+  frontend-check:
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Code Quality (Lint)
+        run: npm run lint
+
+      - name: Verify Build (Dry Run)
+        run: npm run build
+        # If this passes, Vercel's automatic deployment will likely succeed too.
+
+  # 3. Backend Deploy (AWS Lambda)
+  # AWS needs this because it doesn't auto-deploy like Vercel.
+  backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -49,88 +68,26 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
-      
-      - name: Run linter
-        run: npm run lint
-      
-      - name: Build frontend
-        run: npm run build
-      
-      - name: Deploy to Vercel (on main branch)
-        if: github.ref == 'refs/heads/main'
-        run: |
-          # Vercel deployment would be triggered automatically
-          # or use: vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-          echo "Vercel deployment triggered"
 
-  # Backend Tests and Deploy
-  backend:
-    needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build backend
+      - name: Build TypeScript Lambdas
         run: npm run build:backend
-      
-      - name: Run backend tests
+
+      - name: Run Unit Tests (Jest)
         run: npm test
-        env:
-          NODE_ENV: test
-      
-      - name: Configure AWS credentials
-        if: github.ref == 'refs/heads/main'
+
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-      
+          aws-region: us-east-1
+
       - name: SAM Build
-        if: github.ref == 'refs/heads/main'
         run: |
           cd aws
           sam build
-      
+
       - name: SAM Deploy
-        if: github.ref == 'refs/heads/main'
         run: |
           cd aws
           sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
-
-  # API Integration Tests (Bruno)
-  integration-tests:
-    needs: [frontend, backend]
-    if: |
-      always() &&
-      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
-      (needs.backend.result == 'success' || needs.backend.result == 'skipped')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      
-      - name: Install Bruno CLI
-        run: npm install -g @usebruno/cli
-      
-      - name: Run API integration tests
-        run: |
-          # Start local backend for testing
-          npm run dev:backend &
-          sleep 10
-          # Run Bruno tests
-          # bru run tests/api --env local
-          echo "Integration tests would run here"
