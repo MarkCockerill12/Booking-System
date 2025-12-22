@@ -33,10 +33,16 @@ export default function AuthPage() {
     try {
       if (isLogin) {
         const response = await authAPI.login(email, password)
+        if (response.data?.token) {
+          localStorage.setItem("token", response.data.token)
+        }
         toast.success("Logged in successfully!")
         router.push("/search")
       } else {
         const response = await authAPI.signup(email, password, name)
+        if (response.data?.token) {
+          localStorage.setItem("token", response.data.token)
+        }
         toast.success("Account created successfully!")
         router.push("/search")
       }

@@ -9,12 +9,22 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   console.log(`📡 Fetching: ${url}`);
 
   try {
+    const headers: any = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    // Add Authorization header if token exists
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+
     const response = await fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
 
     // Check if we got HTML back (common error when hitting frontend instead of backend)

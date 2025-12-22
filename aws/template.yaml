@@ -303,6 +303,14 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /bookings
             Method: post
+        CreateBookingOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /bookings
+            Method: options
+            Auth:
+              Authorizer: NONE
         GetBookings:
           Type: Api
           Properties:
@@ -315,6 +323,14 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /bookings/{id}
             Method: get
+        GetBookingOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /bookings/{id}
+            Method: options
+            Auth:
+              Authorizer: NONE
         UpdateBooking:
           Type: Api
           Properties:
@@ -354,6 +370,16 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /weather
             Method: get
+            Auth:
+              Authorizer: NONE  # <--- PUBLIC ACCESS ENABLED
+        GetWeatherOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /weather
+            Method: options
+            Auth:
+              Authorizer: NONE  # <--- PUBLIC ACCESS ENABLED
 
   # Financial Service
   FinancialFunction:
@@ -446,18 +472,40 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /rooms
             Method: get
+            Auth:
+              Authorizer: NONE  # <--- PUBLIC ACCESS ENABLED
+        ListRoomsOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /rooms
+            Method: options
+            Auth:
+              Authorizer: NONE  # <--- PUBLIC ACCESS ENABLED
         SearchRooms:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
             Path: /rooms/search
             Method: get
+            Auth:
+              Authorizer: NONE  # <--- PUBLIC ACCESS ENABLED
         GetRoom:
           Type: Api
           Properties:
             RestApiId: !Ref BookingApi
             Path: /rooms/{id}
             Method: get
+            Auth:
+              Authorizer: NONE  # <--- PUBLIC ACCESS ENABLED
+        GetRoomOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /rooms/{id}
+            Method: options
+            Auth:
+              Authorizer: NONE  # <--- PUBLIC ACCESS ENABLED
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref RoomsTable

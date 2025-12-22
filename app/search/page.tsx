@@ -165,7 +165,7 @@ export default function SearchPage() {
           {loading ? (
             <div className="vista-glass p-12 md:p-16 rounded-2xl text-center shadow-2xl">
               <div className="inline-block vista-float-slow mb-4">
-                <Image src="/images/globesearch.png" alt="Loading" width={100} height={100} unoptimized />
+                <Image src="/images/globeSearch.png" alt="Loading" width={100} height={100} unoptimized />
               </div>
               <p className="text-gray-800 text-xl md:text-2xl font-bold">Searching for rooms...</p>
             </div>
