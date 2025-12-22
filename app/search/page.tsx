@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { VistaLayout } from "@/components/vista-layout"
-import { Filter, MapPin, Users, Calendar } from "lucide-react"
+import { MapPin, Users, Calendar } from "lucide-react"
 import { vistaSlideIn } from "@/lib/anime-utils"
 import { AeroIconButton } from "@/components/aero-icon-button"
 import { authAPI, roomsAPI } from "@/lib/api"
@@ -34,7 +34,14 @@ export default function SearchPage() {
 
   const fetchRooms = async () => {
     try {
-      const response = await roomsAPI.getAll()
+      // Use current dateFilter state (initialized to today)
+      const filters: any = {}
+      if (dateFilter) {
+        filters.startDate = dateFilter
+        filters.endDate = dateFilter
+      }
+
+      const response = await roomsAPI.getAll(filters)
       if (response.success) {
         // Handle both array directly or { rooms: [] } structure
         const rooms = Array.isArray(response.data) ? response.data : (response.data?.rooms || [])
@@ -53,7 +60,11 @@ export default function SearchPage() {
       const filters: any = {}
       if (capacityFilter) filters.capacity = Number.parseInt(capacityFilter)
       if (locationFilter) filters.location = locationFilter
-      filters.available = true
+      // Pass date filter to check availability
+      if (dateFilter) {
+        filters.startDate = dateFilter
+        filters.endDate = dateFilter
+      }
 
       const response = await roomsAPI.getAll(filters)
       if (response.success) {
@@ -74,105 +85,80 @@ export default function SearchPage() {
 
   return (
     <VistaLayout>
-      <div ref={headerRef} className="vista-glass-dark opacity-0">
+      <div ref={headerRef} className="vista-glass-dark opacity-0 overflow-x-hidden">
         {/* Navigation Bar - Integrated */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/20">
           <div>
             <AeroIconButton icon="arrow" title="Back" onClick={() => router.push("/")} />
           </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="hidden md:block w-16 h-16 relative">
+               <Image src="/images/globe-people.png" alt="Globe" fill className="object-contain" />
+            </div>
+            <h1 className="hidden md:block text-6xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-cyan-500 to-green-500 bg-clip-text text-transparent drop-shadow-sm pb-2">
+              Search for Rooms
+            </h1>
+          </div>
+
           <div className="flex gap-4">
-            <AeroIconButton icon="mail" title="My Bookings" onClick={() => setIsSidebarOpen(true)} />
-            <AeroIconButton icon="user" title="Account / Logout" onClick={async () => {
-              try {
-                await authAPI.logout()
-                toast.success("Logged out successfully")
-                router.push("/")
-              } catch (error) {
-                toast.error("Logout failed")
-              }
-            }} />
+            <AeroIconButton icon="menu" title="My Bookings" onClick={() => setIsSidebarOpen(true)} />
           </div>
         </div>
         
         {/* Main Content */}
         <div className="p-6 md:p-10">
-          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 mb-10">
-            <div className="vista-float-slow drop-shadow-2xl flex-shrink-0">
-              <Image
-                src="/images/globesearch.png"
-                alt="Search Rooms"
-                width={120}
-                height={120}
-                className="drop-shadow-2xl w-32 h-32 md:w-36 md:h-36"
-                unoptimized
-              />
-            </div>
-            <div className="text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-cyan-500 to-green-500 bg-clip-text text-transparent drop-shadow-sm mb-2">
-                Search for Rooms
-              </h1>
-              <p className="text-gray-700 text-base md:text-lg font-medium">
-                Find the perfect conference room for your needs
-              </p>
-            </div>
-          </div>
+          {/* Mobile Title */}
+          <h1 className="md:hidden text-center text-3xl font-bold bg-gradient-to-r from-blue-600 via-cyan-500 to-green-500 bg-clip-text text-transparent drop-shadow-sm mb-6 pb-2">
+            Search for Rooms
+          </h1>
 
-          <div className="vista-glass-dark p-4 md:p-6 rounded-2xl shadow-2xl mb-10 border-2 border-white/30">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                <Filter className="w-6 h-6 text-white" />
-              </div>
-              <span className="font-bold text-gray-900 text-xl md:text-2xl">Filter Rooms</span>
-            </div>
-
-            <div className="flex flex-wrap gap-3 md:gap-4 mb-6">
-              <div className="flex items-center gap-3 vista-glass py-3 md:py-4 px-4 md:px-5 rounded-xl shadow-lg border border-white/40">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-5 h-5 text-white" />
+          <div className="vista-glass-dark p-4 rounded-2xl shadow-2xl mb-10 border-2 border-white/30">
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <div className="flex items-center gap-3 vista-glass py-2 px-4 rounded-xl shadow-lg border border-white/40 flex-1 w-full md:w-auto">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 text-white" />
                 </div>
                 <input
                   type="number"
                   placeholder="Capacity"
                   value={capacityFilter}
                   onChange={(e) => setCapacityFilter(e.target.value)}
-                  className="bg-transparent outline-none w-20 md:w-28 text-gray-900 font-bold text-base md:text-lg placeholder:text-gray-500"
+                  className="bg-transparent outline-none w-full text-gray-900 font-bold text-sm placeholder:text-gray-500"
                   min="1"
                 />
               </div>
 
-              <div className="flex items-center gap-3 vista-glass py-3 md:py-4 px-4 md:px-5 rounded-xl shadow-lg border border-white/40">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-3 vista-glass py-2 px-4 rounded-xl shadow-lg border border-white/40 flex-1 w-full md:w-auto">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-4 h-4 text-white" />
                 </div>
                 <input
                   type="text"
                   placeholder="Location"
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
-                  className="bg-transparent outline-none w-32 md:w-40 text-gray-900 font-bold text-base md:text-lg placeholder:text-gray-500"
+                  className="bg-transparent outline-none w-full text-gray-900 font-bold text-sm placeholder:text-gray-500"
                 />
               </div>
 
-              <div className="flex items-center gap-3 vista-glass py-3 md:py-4 px-4 md:px-5 rounded-xl shadow-lg border border-white/40">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-3 vista-glass py-2 px-4 rounded-xl shadow-lg border border-white/40 flex-1 w-full md:w-auto">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4 text-white" />
                 </div>
-                <div className="flex flex-col">
-                  <label className="text-xs text-gray-600 font-semibold mb-1">Select Day</label>
-                  <input
-                    type="date"
-                    value={dateFilter}
-                    onChange={(e) => setDateFilter(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    className="bg-transparent outline-none text-gray-900 font-bold text-sm md:text-base"
-                  />
-                </div>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="bg-transparent outline-none w-full text-gray-900 font-bold text-sm"
+                />
               </div>
-            </div>
 
-            <AeroButton variant="green" size="md" onClick={handleSearch}>
-              Search Rooms
-            </AeroButton>
+              <AeroButton variant="green" size="md" onClick={handleSearch} className="w-full md:w-auto whitespace-nowrap">
+                Search
+              </AeroButton>
+            </div>
           </div>
 
           {/* Room Cards */}
@@ -193,7 +179,7 @@ export default function SearchPage() {
               {filteredRooms.map((room) => (
                 <div
                   key={room.id}
-                  className="vista-card p-6 md:p-7 cursor-pointer border-2 border-white/40 transition-transform hover:scale-105"
+                  className="vista-card p-6 md:p-7 cursor-pointer border-2 border-white/40 transition-transform hover:scale-105 relative"
                   onClick={() => handleRoomClick(room.id)}
                 >
                   <div className="w-full h-40 md:h-48 bg-gradient-to-br from-blue-400 via-cyan-300 to-green-400 rounded-xl mb-6 relative overflow-hidden shadow-xl">
@@ -237,8 +223,15 @@ export default function SearchPage() {
                       <span className="truncate">{room.location}</span>
                     </div>
 
+                    {/* Availability Badge */}
+                    {!room.available && (
+                      <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg z-10">
+                        Booked
+                      </div>
+                    )}
+
                     <div className="pt-4 border-t-4 border-gradient-to-r from-blue-400 to-cyan-400 flex items-baseline gap-2">
-                      <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                      <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent pb-1">
                         £{room.pricePerHour}
                       </span>
                       <span className="text-sm text-gray-600 font-bold">/hour</span>

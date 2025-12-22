@@ -355,13 +355,16 @@ export const handler = async (event: BookingEvent) => {
         }
       }
 
+      // Ensure status is uppercase for consistency
+      const normalizedStatus = status.toUpperCase()
+
       const result = await dynamo.send(
         new UpdateCommand({
           TableName: BOOKINGS_TABLE,
           Key: { booking_id: bookingId },
           UpdateExpression: "SET booking_status = :status, updated_at = :updatedAt",
           ExpressionAttributeValues: {
-            ":status": status,
+            ":status": normalizedStatus,
             ":updatedAt": new Date().toISOString(),
           },
           ReturnValues: "ALL_NEW",

@@ -94,24 +94,20 @@ export default function AuthPage() {
 
   return (
     <VistaLayout>
-      <div className="fixed top-6 left-6 z-50">
-        <AeroIconButton icon="info" title="Back to Home" onClick={() => router.push("/")} />
-      </div>
-
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div ref={formRef} className="vista-glass-dark p-10 md:p-14 max-w-lg w-full opacity-0">
+        <div ref={formRef} className="vista-glass-dark p-6 md:p-8 max-w-lg w-full opacity-0">
           {/* Header with icon */}
-          <div className="text-center mb-10">
-            <div className="inline-block mb-6 vista-float-slow">
+          <div className="text-center mb-6">
+            <div className="inline-block mb-4 vista-float-slow">
               <Image
                 src="/images/Aero Circle 9.png"
                 alt="User Account"
-                width={96}
-                height={96}
+                width={200}
+                height={200}
                 className="drop-shadow-2xl"
               />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 bg-clip-text text-transparent pb-2">
               {isLogin ? "Log In" : "Sign Up"}
             </h1>
           </div>

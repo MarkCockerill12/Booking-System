@@ -10,6 +10,7 @@ import { vistaSlideIn } from "@/lib/anime-utils"
 import { roomsAPI, bookingsAPI, weatherAPI, authAPI } from "@/lib/api"
 import { toast } from "sonner"
 import type { Room, WeatherData } from "@/lib"
+import { BookingSidebar } from "@/components/booking-sidebar"
 import Image from "next/image"
 
 export default function BookingPage() {
@@ -25,6 +26,7 @@ export default function BookingPage() {
   const [weatherSurcharge, setWeatherSurcharge] = useState(0)
   const [totalPrice, setTotalPrice] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -38,7 +40,8 @@ export default function BookingPage() {
   const fetchRoomDetails = async () => {
     try {
       console.log("[v0] Fetching room details for:", roomId)
-      const roomResponse = await roomsAPI.getById(roomId)
+      // Pass bookingDate to check availability
+      const roomResponse = await roomsAPI.getById(roomId, bookingDate)
       if (roomResponse.success) {
         // Handle both direct object or { room: ... } structure
         const roomData = roomResponse.data.room || roomResponse.data
@@ -173,20 +176,11 @@ export default function BookingPage() {
             </div>
             <div className="flex gap-4">
               <AeroIconButton icon="mail" title="Contact" />
-              <AeroIconButton icon="user" title="Account / Logout" onClick={async () => {
-                try {
-                  await authAPI.logout()
-                  toast.success("Logged out successfully")
-                  router.push("/")
-                } catch (error) {
-                  toast.error("Logout failed")
-                }
-              }} />
             </div>
           </div>
           <div className="p-12 md:p-16">
             <div className="inline-block vista-float-slow">
-              <Image src="/images/image-204.png" alt="Loading" width={80} height={80} className="drop-shadow-2xl" unoptimized />
+              <Image src="/images/image 4.png" alt="Loading" width={80} height={80} className="drop-shadow-2xl" unoptimized />
             </div>
             <p className="text-xl md:text-2xl font-bold text-gray-800 mt-6">Loading room details...</p>
           </div>
@@ -205,16 +199,7 @@ export default function BookingPage() {
               <AeroIconButton icon="arrow" title="Back" onClick={() => router.back()} />
             </div>
             <div className="flex gap-4">
-              <AeroIconButton icon="mail" title="Contact" />
-              <AeroIconButton icon="user" title="Account / Logout" onClick={async () => {
-                try {
-                  await authAPI.logout()
-                  toast.success("Logged out successfully")
-                  router.push("/")
-                } catch (error) {
-                  toast.error("Logout failed")
-                }
-              }} />
+              <AeroIconButton icon="menu" title="My Bookings" onClick={() => setIsSidebarOpen(true)} />
             </div>
           </div>
           
@@ -240,7 +225,7 @@ export default function BookingPage() {
 
             <div className="grid md:grid-cols-2 gap-8 md:gap-10 mb-8">
               <div>
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-cyan-600 to-green-600 bg-clip-text text-transparent mb-6 drop-shadow-sm">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-cyan-600 to-green-600 bg-clip-text text-transparent mb-6 drop-shadow-sm pb-2">
                   {room.name}
                 </h1>
                 <p className="text-gray-800 text-base md:text-lg mb-6 leading-relaxed">{room.description}</p>
@@ -309,8 +294,8 @@ export default function BookingPage() {
               </div>
 
               <div className="vista-glass-dark p-6 md:p-8 rounded-2xl h-fit shadow-2xl border-2 border-white/30">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-8 flex items-center gap-3">
-                  💰 Pricing Breakdown
+                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-8 flex items-center gap-3 pb-1">
+                  Pricing Breakdown
                 </h2>
 
                 <div className="space-y-6 mb-8">
@@ -366,8 +351,14 @@ export default function BookingPage() {
                   </div>
                 </div>
 
-                <AeroButton variant="blue" size="lg" onClick={handleBookRoom} className="w-full">
-                  Confirm Booking
+                <AeroButton 
+                  variant="blue" 
+                  size="lg" 
+                  onClick={handleBookRoom} 
+                  className={`w-full ${!room?.available ? "opacity-50 cursor-not-allowed bg-gray-400 hover:bg-gray-400" : ""}`}
+                  disabled={!room?.available}
+                >
+                  {!room?.available ? "Already Booked" : "Confirm Booking"}
                 </AeroButton>
               </div>
             </div>
@@ -390,6 +381,7 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
+      <BookingSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
     </VistaLayout>
   )
 }

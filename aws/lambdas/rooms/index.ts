@@ -82,17 +82,27 @@ async function isRoomAvailable(
       TableName: BOOKINGS_TABLE,
       IndexName: 'room-date-index',
       KeyConditionExpression: 'room_id = :roomId AND booking_date BETWEEN :startDate AND :endDate',
+      FilterExpression: 'booking_status <> :cancelled AND booking_status <> :cancelled_lower',
       ExpressionAttributeValues: {
         ':roomId': { S: roomId },
         ':startDate': { S: startDate },
         ':endDate': { S: endDate },
+        ':cancelled': { S: 'CANCELLED' },
+        ':cancelled_lower': { S: 'cancelled' },
       },
     });
 
+    console.log(`Checking availability for room ${roomId} between ${startDate} and ${endDate} in table ${BOOKINGS_TABLE}`);
     const result = await dynamoClient.send(command);
+    console.log(`Found ${result.Items?.length || 0} bookings`);
+    
     return !result.Items || result.Items.length === 0;
   } catch (error) {
     console.error('Error checking room availability:', error);
+    // If we can't check availability, we should probably assume it's available to avoid blocking everything,
+    // OR return false and log the error. Returning false is safer to prevent double bookings, 
+    // but if configuration is wrong, it blocks everything.
+    // For debugging, let's see the error.
     return false;
   }
 }
@@ -138,9 +148,12 @@ async function getRooms(
           available: await isRoomAvailable(room.room_id, startDate, endDate),
         }))
       );
-      rooms = availabilityChecks
-        .filter((check) => check.available)
-        .map((check) => check.room);
+      
+      // Update availability status but DO NOT filter out unavailable rooms
+      rooms = availabilityChecks.map((check) => ({
+        ...check.room,
+        available: check.available
+      }));
     }
 
     const sortedRooms = [...rooms].sort((a, b) => a.name.localeCompare(b.name));
@@ -162,7 +175,7 @@ async function getRooms(
 /**
  * Get a single room by ID
  */
-async function getRoomById(roomId: string): Promise<ApiResponse> {
+async function getRoomById(roomId: string, date?: string): Promise<ApiResponse> {
   try {
     const command = new GetItemCommand({
       TableName: ROOMS_TABLE,
@@ -181,6 +194,11 @@ async function getRoomById(roomId: string): Promise<ApiResponse> {
     }
 
     const room = unmarshall(result.Item) as Room;
+
+    // Check availability if date provided
+    if (date) {
+      room.available = await isRoomAvailable(roomId, date, date);
+    }
 
     return {
       success: true,
@@ -244,7 +262,8 @@ export const handler = async (
     // GET /rooms/:id
     if (method === 'GET' && pathParts.length === 2 && pathParts[0] === 'rooms') {
       const roomId = pathParts[1];
-      const result = await getRoomById(roomId);
+      const date = event.queryStringParameters?.date;
+      const result = await getRoomById(roomId, date);
 
       return {
         statusCode: result.success ? 200 : 404,

@@ -54,7 +54,7 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
 
   const handleCancel = async (id: string) => {
     try {
-      const response = await bookingsAPI.updateStatus(id, "cancelled")
+      const response = await bookingsAPI.updateStatus(id, "CANCELLED")
       if (response.success) {
         toast.success("Booking cancelled successfully")
         fetchBookings() // Refresh list
@@ -80,13 +80,13 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
       <div
         className={cn(
           "fixed top-0 right-0 h-full w-full md:w-[400px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-2xl z-50 transition-transform duration-300 ease-out border-l border-white/20",
-          isOpen ? "translate-x-0" : "translate-x-full"
+          isOpen ? "translate-x-0" : "translate-x-full invisible"
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-blue-600/10 to-purple-600/10">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent pb-1">
               My Bookings
             </h2>
             <AeroIconButton icon="x" onClick={onClose} title="Close" />
@@ -99,9 +99,9 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
               </div>
             ) : bookings.length === 0 ? (
-              <div className="text-center text-slate-500 py-10">
-                <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No bookings found.</p>
+              <div className="text-center text-slate-900 py-10">
+                <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50 text-slate-900" />
+                <p className="font-medium">No bookings found.</p>
               </div>
             ) : (
               bookings.map((booking) => (
@@ -110,22 +110,22 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
                   className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-white/20 shadow-sm hover:shadow-md transition-all"
                 >
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-semibold text-lg">{booking.roomName || "Conference Room"}</h3>
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white">{booking.roomName || "Conference Room"}</h3>
                     <span
                       className={cn(
-                        "px-2 py-1 rounded-full text-xs font-medium",
-                        booking.status === "confirmed"
-                          ? "bg-green-100 text-green-700"
-                          : booking.status === "cancelled"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
+                        "px-2 py-1 rounded-full text-xs font-bold",
+                        booking.status.toLowerCase() === "confirmed"
+                          ? "bg-green-100 text-green-800"
+                          : booking.status.toLowerCase() === "cancelled"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
                       )}
                     >
                       {booking.status.toUpperCase()}
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300 mb-4">
+                  <div className="space-y-2 text-sm text-slate-900 dark:text-white mb-4 font-medium">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       <span>{new Date(booking.startTime).toLocaleDateString()}</span>
@@ -144,12 +144,12 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
                         })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 font-medium text-slate-900 dark:text-white">
+                    <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                       <span>Total: ${booking.totalPrice?.toFixed(2)}</span>
                     </div>
                   </div>
 
-                  {booking.status !== "cancelled" && (
+                  {booking.status.toLowerCase() !== "cancelled" && (
                     <AeroButton
                       className="w-full bg-red-500 text-white hover:bg-red-600"
                       onClick={() => handleCancel(booking.id)}

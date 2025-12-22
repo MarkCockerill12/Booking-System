@@ -261,6 +261,18 @@ Resources:
             RestApiId: !Ref BookingApi
             Path: /bookings
             Method: get
+        GetBooking:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /bookings/{id}
+            Method: get
+        UpdateBooking:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /bookings/{id}
+            Method: put
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable
@@ -342,6 +354,7 @@ Resources:
         Variables:
           ROOMS_TABLE: !Ref RoomsTable
           LOCATIONS_TABLE: !Ref LocationsTable
+          BOOKINGS_TABLE: !Ref BookingsTable
       Events:
         ListRooms:
           Type: Api
@@ -366,6 +379,8 @@ Resources:
             TableName: !Ref RoomsTable
         - DynamoDBReadPolicy:
             TableName: !Ref LocationsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref BookingsTable
 
 # Outputs
 Outputs:
