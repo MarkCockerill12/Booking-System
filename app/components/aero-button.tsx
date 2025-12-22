@@ -8,7 +8,7 @@ import { vistaButtonPress } from "@/lib/anime-utils"
 interface AeroButtonProps {
   children: React.ReactNode
   onClick?: () => void
-  variant?: "blue" | "green"
+  variant?: "blue" | "green" | "secondary"
   size?: "sm" | "md" | "lg"
   className?: string
   type?: "button" | "submit"
@@ -46,6 +46,7 @@ export function AeroButton({
     blue: "from-blue-400 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-600 hover:to-blue-700 shadow-blue-400/50",
     green:
       "from-green-400 via-green-500 to-green-600 hover:from-green-500 hover:via-green-600 hover:to-green-700 shadow-green-400/50",
+    secondary: "from-gray-400 via-gray-500 to-gray-600 hover:from-gray-500 hover:via-gray-600 hover:to-gray-700 shadow-gray-400/50",
   }
 
   return (
