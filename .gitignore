@@ -16,10 +16,8 @@ locals.json
 # --- AWS SAM & Backend Build Artifacts ---
 # The build directory where SAM places artifacts
 .aws-sam/
-aws/template.local.yaml
-# The specific build output for your custom backend build script
-/backend/dist/
-/aws/dist/
+
+
 # AWS SAM configuration
 samconfig.toml
 # Any zipped lambda code created during local setup

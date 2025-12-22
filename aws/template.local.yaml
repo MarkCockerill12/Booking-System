@@ -1,0 +1,391 @@
+# AWS SAM Template for Production Deployment
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Conference Room Booking System - Serverless Backend
+
+# Global configuration for all Lambda functions
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    MemorySize: 512
+    Environment:
+      Variables:
+        AWS_ENDPOINT: http://localstack:4566 # Force LocalStack endpoint globally
+        LOCATIONS_TABLE: !Ref LocationsTable
+        ROOMS_TABLE: !Ref RoomsTable
+        BOOKINGS_TABLE: !Ref BookingsTable
+        PRICING_RULES_TABLE: !Ref PricingRulesTable
+        PAYMENT_QUEUE_URL: !Ref PaymentQueue
+        REFUND_QUEUE_URL: !Ref RefundQueue
+        NOTIFICATION_TOPIC_ARN: !Ref NotificationTopic
+        S3_BUCKET_NAME: !Ref RoomImagesBucket
+
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      AllowHeaders: "'Content-Type,Authorization'"
+      AllowOrigin: "'*'"
+
+# API Gateway
+Resources:
+  BookingApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt UserPool.Arn
+
+  # Cognito User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: BookingSystemUsers
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  # DynamoDB Tables
+  LocationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: conference-locations
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: location_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: location_id
+          KeyType: HASH
+
+  RoomsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: conference-rooms
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: room_id
+          AttributeType: S
+        - AttributeName: location_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: room_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: location-index
+          KeySchema:
+            - AttributeName: location_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  BookingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: conference-bookings
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: booking_id
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: room_id
+          AttributeType: S
+        - AttributeName: booking_date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: booking_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: user-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: room-date-index
+          KeySchema:
+            - AttributeName: room_id
+              KeyType: HASH
+            - AttributeName: booking_date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  PricingRulesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: pricing-rules
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: rule_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: rule_id
+          KeyType: HASH
+
+  PaymentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: payments
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: bookingId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: booking-index
+          KeySchema:
+            - AttributeName: bookingId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # S3 Bucket
+  RoomImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'conference-room-images-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  # SQS Queues
+  PaymentQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: payment-processing-queue
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+
+  RefundQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: refund-processing-queue
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+
+  # SNS Topic
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: booking-notifications
+
+  # Lambda Functions
+  
+  # Auth Service
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: dist/auth/index.handler
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref UserPool
+          COGNITO_CLIENT_ID: !Ref UserPoolClient
+      Events:
+        Signup:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/signup
+            Method: post
+            Auth:
+              Authorizer: NONE
+        Login:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/login
+            Method: post
+            Auth:
+              Authorizer: NONE
+        Logout:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/logout
+            Method: post
+        Me:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /auth/me
+            Method: get
+
+  # Booking Service
+  BookingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: dist/booking/index.handler
+      Environment:
+        Variables:
+          BOOKINGS_TABLE: !Ref BookingsTable
+          ROOMS_TABLE: !Ref RoomsTable
+          PRICING_RULES_TABLE: !Ref PricingRulesTable
+          PAYMENT_QUEUE_URL: !Ref PaymentQueue
+          WEATHER_FUNCTION_NAME: !Ref WeatherFunction
+      Events:
+        CreateBooking:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /bookings
+            Method: post
+        GetBookings:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /bookings
+            Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BookingsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref RoomsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref PricingRulesTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt PaymentQueue.QueueName
+        - LambdaInvokePolicy:
+            FunctionName: !Ref WeatherFunction
+
+  # Weather Service
+  WeatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: dist/weather/index.handler
+      Events:
+        GetWeather:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /weather
+            Method: get
+
+  # Financial Service
+  FinancialFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: dist/financial/index.sqsHandler
+      Events:
+        PaymentQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt PaymentQueue.Arn
+            BatchSize: 10
+      Environment:
+        Variables:
+          STRIPE_SECRET_KEY: !Sub '{{resolve:secretsmanager:stripe-api-key:SecretString:secret_key}}'
+          PAYMENTS_TABLE: !Ref PaymentsTable
+          BOOKINGS_TABLE: !Ref BookingsTable
+          NOTIFICATION_TOPIC_ARN: !Ref NotificationTopic
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BookingsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PaymentsTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt NotificationTopic.TopicName
+
+  # Notification Service
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: dist/notification/index.handler
+      Events:
+        BookingNotification:
+          Type: SNS
+          Properties:
+            Topic: !Ref NotificationTopic
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: '*'
+
+  # Room Service
+  RoomFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: dist/rooms/index.handler
+      Environment:
+        Variables:
+          ROOMS_TABLE: !Ref RoomsTable
+          LOCATIONS_TABLE: !Ref LocationsTable
+      Events:
+        ListRooms:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /rooms
+            Method: get
+            Auth:
+              Authorizer: NONE
+        SearchRooms:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /rooms/search
+            Method: get
+            Auth:
+              Authorizer: NONE
+        GetRoom:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BookingApi
+            Path: /rooms/{id}
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref RoomsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref LocationsTable
+
+# Outputs
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${BookingApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+  
+  UserPoolId:
+    Description: "Cognito User Pool ID"
+    Value: !Ref UserPool
+  
+  UserPoolClientId:
+    Description: "Cognito User Pool Client ID"
+    Value: !Ref UserPoolClient
+  
+  S3BucketName:
+    Description: "S3 Bucket for room images"
+    Value: !Ref RoomImagesBucket
