@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
+    
 jobs:
   # 1. Detect Changes (Path Filtering)
   changes:
@@ -49,7 +49,11 @@ jobs:
 
       - name: Verify Build (Dry Run)
         run: npm run build
-        # If this passes, Vercel's automatic deployment will likely succeed too.
+        # vvv CRITICAL FIX: Inject Variables here so Next.js build succeeds vvv
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+        # ^^^
 
   # 3. Backend Deploy (AWS Lambda)
   # AWS needs this because it doesn't auto-deploy like Vercel.

@@ -19,8 +19,6 @@
     "@aws-sdk/client-sqs": "^3.956.0",
     "@aws-sdk/lib-dynamodb": "^3.956.0",
     "@aws-sdk/util-dynamodb": "^3.956.0",
-    "@stripe/react-stripe-js": "^5.4.1",
-    "@stripe/stripe-js": "^8.6.0",
     "@types/uuid": "^8.3.4",
     "aws-lambda": "^1.0.7",
     "stripe": "^20.1.0",
