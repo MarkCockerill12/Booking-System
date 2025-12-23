@@ -58,7 +58,7 @@ export default function LandingPage() {
                 <Calendar className="w-10 h-10 text-blue-600" />
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-teal-500 to-green-500 pb-2">
-                Booking System
+                Booking System HELLOOO
               </h1>
             </div>
           </div>

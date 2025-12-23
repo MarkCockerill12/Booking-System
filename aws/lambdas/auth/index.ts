@@ -4,7 +4,7 @@ import {
   SignUpCommand,
   GetUserCommand,
   GlobalSignOutCommand,
-} from "@aws-sdk/client-cognito-identity-provider"
+} from "@aws-sdk/client-cognito-identity-provider" 
 
 const getClientConfig = () => {
   const isLocal = process.env.AWS_SAM_LOCAL === 'true';
