@@ -1,7 +1,7 @@
 import { SNSEvent, SNSEventRecord, Context } from 'aws-lambda';
 import {
   SESClient,
-  SendEmailCommand,
+  SendEmailCommand, 
 } from '@aws-sdk/client-ses';
 import {
   DynamoDBClient,
@@ -389,7 +389,7 @@ async function saveNotificationRecord(
 }
 
 /**
- * Process a single SNS notification
+ * Process a single SNS notification 
  */
 async function processSNSRecord(record: SNSEventRecord): Promise<void> {
   try {
