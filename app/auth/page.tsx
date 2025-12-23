@@ -101,10 +101,10 @@ export default function AuthPage() {
   return (
     <VistaLayout>
       <div className="flex items-center justify-center min-h-[80vh]">
-        <div ref={formRef} className="vista-glass-dark p-6 md:p-8 max-w-lg w-full opacity-0">
+        <div ref={formRef} className="vista-glass-dark p-4 md:p-6 max-w-lg w-full opacity-0">
           {/* Header with icon */}
-          <div className="text-center mb-6">
-            <div className="inline-block mb-4 vista-float-slow">
+          <div className="text-center mb-2">
+            <div className="inline-block mb-2 vista-float-slow">
               <Image
                 src="/images/Aero Circle 9.png"
                 alt="User Account"
@@ -142,10 +142,10 @@ export default function AuthPage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Name</label>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
                   value={name}
@@ -158,7 +158,7 @@ export default function AuthPage() {
             )}
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
               <input
                 type="email"
                 value={email}
@@ -170,7 +170,7 @@ export default function AuthPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
               <input
                 type="password"
                 value={password}
@@ -181,7 +181,7 @@ export default function AuthPage() {
               />
             </div>
 
-            <div className="pt-4">
+            <div className="pt-2">
               <AeroButton type="submit" variant="blue" size="lg" className="w-full" disabled={isLoading}>
                 {isLoading ? "Loading..." : isLogin ? "Log In" : "Sign Up"}
               </AeroButton>
@@ -189,7 +189,7 @@ export default function AuthPage() {
           </form>
 
           {/* Toggle */}
-          <div className="mt-8 text-center">
+          <div className="mt-4 text-center">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}

@@ -93,7 +93,7 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 space-y-8">
             {loading ? (
               <div className="flex items-center justify-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -104,61 +104,49 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
                 <p className="font-medium">No bookings found.</p>
               </div>
             ) : (
-              bookings.map((booking) => (
-                <div
-                  key={booking.id}
-                  className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-white/20 shadow-sm hover:shadow-md transition-all"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white">{booking.roomName || "Conference Room"}</h3>
-                    <span
-                      className={cn(
-                        "px-2 py-1 rounded-full text-xs font-bold",
-                        booking.status.toLowerCase() === "confirmed"
-                          ? "bg-green-100 text-green-800"
-                          : booking.status.toLowerCase() === "cancelled"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
+              <>
+                {/* Upcoming Bookings Section */}
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-blue-600" />
+                    Upcoming Bookings
+                  </h3>
+                  <div className="space-y-4">
+                    {bookings
+                      .filter(b => ['confirmed', 'pending'].includes(b.status.toLowerCase()))
+                      .length === 0 ? (
+                        <p className="text-sm text-slate-500 italic">No upcoming bookings</p>
+                      ) : (
+                        bookings
+                          .filter(b => ['confirmed', 'pending'].includes(b.status.toLowerCase()))
+                          .map((booking) => (
+                            <BookingCard key={booking.id} booking={booking} onCancel={handleCancel} />
+                          ))
                       )}
-                    >
-                      {booking.status.toUpperCase()}
-                    </span>
                   </div>
-
-                  <div className="space-y-2 text-sm text-slate-900 dark:text-white mb-4 font-medium">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(booking.startTime).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span>
-                        {new Date(booking.startTime).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                        {" - "}
-                        {new Date(booking.endTime).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                      <span>Total: ${booking.totalPrice?.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {booking.status.toLowerCase() !== "cancelled" && (
-                    <AeroButton
-                      className="w-full bg-red-500 text-white hover:bg-red-600"
-                      onClick={() => handleCancel(booking.id)}
-                    >
-                      Cancel Booking
-                    </AeroButton>
-                  )}
                 </div>
-              ))
+
+                {/* Past / Other Bookings Section */}
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 border-t border-white/10 pt-4">
+                    <Clock className="w-5 h-5 text-slate-500" />
+                    Past & Cancelled
+                  </h3>
+                  <div className="space-y-4">
+                    {bookings
+                      .filter(b => !['confirmed', 'pending'].includes(b.status.toLowerCase()))
+                      .length === 0 ? (
+                        <p className="text-sm text-slate-500 italic">No past bookings</p>
+                      ) : (
+                        bookings
+                          .filter(b => !['confirmed', 'pending'].includes(b.status.toLowerCase()))
+                          .map((booking) => (
+                            <BookingCard key={booking.id} booking={booking} onCancel={handleCancel} />
+                          ))
+                      )}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -166,3 +154,61 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
     </>
   )
 }
+
+function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: string) => void }) {
+  return (
+    <div
+      className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-white/20 shadow-sm hover:shadow-md transition-all"
+    >
+      <div className="flex justify-between items-start mb-3">
+        <h3 className="font-bold text-lg text-slate-900 dark:text-white">{booking.roomName || "Conference Room"}</h3>
+        <span
+          className={cn(
+            "px-2 py-1 rounded-full text-xs font-bold",
+            booking.status.toLowerCase() === "confirmed"
+              ? "bg-green-100 text-green-800"
+              : booking.status.toLowerCase() === "cancelled"
+              ? "bg-red-100 text-red-800"
+              : "bg-yellow-100 text-yellow-800"
+          )}
+        >
+          {booking.status.toUpperCase()}
+        </span>
+      </div>
+
+      <div className="space-y-2 text-sm text-slate-900 dark:text-white mb-4 font-medium">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4" />
+          <span>{new Date(booking.startTime).toLocaleDateString()}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          <span>
+            {new Date(booking.startTime).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+            {" - "}
+            {new Date(booking.endTime).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+          <span>Total: ${booking.totalPrice?.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {booking.status.toLowerCase() !== "cancelled" && (
+        <AeroButton
+          className="w-full bg-red-500 text-white hover:bg-red-600"
+          onClick={() => onCancel(booking.id)}
+        >
+          Cancel Booking
+        </AeroButton>
+      )}
+    </div>
+  )
+}
+
