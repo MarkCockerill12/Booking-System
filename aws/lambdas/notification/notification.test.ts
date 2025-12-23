@@ -27,7 +27,7 @@ describe("Notification Lambda", () => {
         end_time: "2023-10-27T12:00:00Z",
         total_price: 100,
         attendees: 5,
-        booking_status: "confirmed",
+        booking_status: "CONFIRMED",
       }),
     });
 

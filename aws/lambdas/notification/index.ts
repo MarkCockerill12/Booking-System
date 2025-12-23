@@ -198,8 +198,8 @@ function generateConfirmationEmail(booking: BookingDetails): string {
           <span>$${booking.totalAmount.toFixed(2)}</span>
         </div>
         <div class="detail-row">
-          <span class="label">Payment Status:</span>
-          <span>${booking.paymentStatus || 'Pending'}</span>
+          <span class="label">Status:</span>
+          <span style="color: green; font-weight: bold;">CONFIRMED</span>
         </div>
       </div>
       
@@ -377,6 +377,12 @@ async function processSNSRecord(record: SNSEventRecord): Promise<void> {
 
     if (!booking) {
       throw new Error(`Booking not found: ${payload.bookingId}`);
+    }
+
+    // Ensure booking is confirmed before sending confirmation email
+    if (payload.type === 'booking_confirmation' && booking.bookingStatus !== 'CONFIRMED') {
+      console.warn(`Skipping confirmation email for booking ${payload.bookingId} because status is ${booking.bookingStatus}`);
+      return;
     }
 
     // Send email
