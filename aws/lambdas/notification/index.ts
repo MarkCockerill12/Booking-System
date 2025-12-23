@@ -14,6 +14,7 @@ const getClientConfig = () => {
   const isLocal = process.env.AWS_SAM_LOCAL === 'true';
   const endpoint = process.env.AWS_ENDPOINT || (isLocal ? 'http://localstack:4566' : undefined);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const config: any = {
     region: process.env.AWS_REGION || "us-east-1",
     endpoint: endpoint,
@@ -34,6 +35,7 @@ const dynamoClient = new DynamoDBClient(getClientConfig());
 
 const NOTIFICATIONS_TABLE = process.env.NOTIFICATIONS_TABLE || 'notifications';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USERS_TABLE = process.env.USERS_TABLE || 'users';
 const ROOMS_TABLE = process.env.ROOMS_TABLE || 'rooms';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@conferencerooms.com';
@@ -44,6 +46,7 @@ interface NotificationPayload {
   bookingId: string;
   userId: string;
   userEmail: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -70,6 +73,7 @@ interface NotificationRecord {
   status: 'sent' | 'failed' | 'pending';
   sentAt?: number;
   error?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -434,6 +438,7 @@ async function processSNSRecord(record: SNSEventRecord): Promise<void> {
 /**
  * Main Lambda handler for SNS events
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const handler = async (event: SNSEvent, context: Context): Promise<void> => {
   console.log('SNS Event:', JSON.stringify(event, null, 2));
 

@@ -9,6 +9,7 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   console.log(`📡 Fetching: ${url}`);
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const headers: any = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -53,6 +54,7 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
 }
 
 // Legacy compatibility wrapper
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   return fetchAPI(endpoint, options);
 }
@@ -95,6 +97,7 @@ export const roomsAPI = {
     
     // Map backend room_id to frontend id
     if (response.success && response.data?.rooms) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       response.data.rooms = response.data.rooms.map((room: any) => ({
         ...room,
         id: room.room_id || room.id

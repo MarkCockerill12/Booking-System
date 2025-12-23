@@ -8,6 +8,7 @@ const getClientConfig = () => {
   const isLocal = process.env.AWS_SAM_LOCAL === 'true';
   const endpoint = process.env.AWS_ENDPOINT || (isLocal ? 'http://localstack:4566' : undefined);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const config: any = {
     region: process.env.AWS_REGION || "us-east-1",
     endpoint: endpoint,
@@ -97,6 +98,7 @@ async function getWeatherForecast(location: string, date: string): Promise<numbe
   }
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const handler = async (event: BookingEvent) => {
   try {
     const method = event.httpMethod
@@ -188,15 +190,16 @@ export const handler = async (event: BookingEvent) => {
         })
       )
 
-      let surchargeMultiplier = 1.0
+      let surchargeMultiplier = 1
       const pricingRules = pricingRulesResult.Items || []
 
       // Apply temperature-based surcharge
       for (const rule of pricingRules) {
         if (rule.type === "temperature") {
-          if (temperature > 25 && rule.condition === "high") {
-            surchargeMultiplier += rule.surchargePercent / 100
-          } else if (temperature < 15 && rule.condition === "low") {
+          if (
+            (temperature > 25 && rule.condition === "high") ||
+            (temperature < 15 && rule.condition === "low")
+          ) {
             surchargeMultiplier += rule.surchargePercent / 100
           }
         }
@@ -397,12 +400,13 @@ export const handler = async (event: BookingEvent) => {
       headers: corsHeaders,
       body: JSON.stringify({ success: false, error: "Not found" }),
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Booking Lambda error:", error)
+    const errorMessage = error instanceof Error ? error.message : "Internal server error"
     return {
       statusCode: 500,
       headers: corsHeaders,
-      body: JSON.stringify({ success: false, error: error.message || "Internal server error" }),
+      body: JSON.stringify({ success: false, error: errorMessage }),
     }
   }
 }

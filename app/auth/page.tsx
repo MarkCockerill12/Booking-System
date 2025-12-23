@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { VistaLayout } from "@/components/vista-layout"
 import { AeroButton } from "@/components/aero-button"
-import { AeroIconButton } from "@/components/aero-icon-button"
 import { vistaSlideIn } from "@/lib/anime-utils"
 import { authAPI } from "@/lib/api"
 import { toast } from "sonner"
@@ -46,9 +45,10 @@ export default function AuthPage() {
         toast.success("Account created successfully!")
         router.push("/search")
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Auth error:", error)
-      toast.error(error.message || "Authentication failed")
+      const errorMessage = error instanceof Error ? error.message : "Authentication failed"
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }

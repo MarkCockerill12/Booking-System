@@ -1,6 +1,7 @@
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBClient, PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Stripe from "stripe";
 
 const mockPaymentIntentsCreate = jest.fn();
@@ -63,6 +64,7 @@ describe("Financial Lambda (SQS Handler)", () => {
       ],
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await sqsHandler(event as any);
 
     // Verify Stripe call

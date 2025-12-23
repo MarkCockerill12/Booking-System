@@ -6,7 +6,7 @@ import { VistaLayout } from "@/components/vista-layout"
 import { MapPin, Users, Calendar } from "lucide-react"
 import { vistaSlideIn } from "@/lib/anime-utils"
 import { AeroIconButton } from "@/components/aero-icon-button"
-import { authAPI, roomsAPI } from "@/lib/api"
+import { roomsAPI } from "@/lib/api"
 import Image from "next/image"
 import { toast } from "sonner"
 import type { Room } from "@/lib"
@@ -36,6 +36,7 @@ export default function SearchPage() {
   const fetchRooms = async () => {
     try {
       // Use current dateFilter state (initialized to today)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const filters: any = {}
       if (dateFilter) {
         filters.startDate = dateFilter
@@ -48,7 +49,7 @@ export default function SearchPage() {
         const rooms = Array.isArray(response.data) ? response.data : (response.data?.rooms || [])
         setFilteredRooms(rooms)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching rooms:", error)
       toast.error("Failed to load rooms")
     } finally {
@@ -58,6 +59,7 @@ export default function SearchPage() {
 
   const handleSearch = async () => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const filters: any = {}
       if (capacityFilter) filters.capacity = Number.parseInt(capacityFilter)
       if (locationFilter) filters.location = locationFilter

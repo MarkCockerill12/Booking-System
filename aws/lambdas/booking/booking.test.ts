@@ -40,6 +40,7 @@ describe("Booking Lambda", () => {
     lambdaMock.on(InvokeCommand).resolves({
       Payload: new TextEncoder().encode(JSON.stringify({
         body: JSON.stringify({ temperature: 25 })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       })) as any,
     });
 
@@ -77,6 +78,7 @@ describe("Booking Lambda", () => {
       },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await handler(event as any);
 
     expect(result.statusCode).toBe(201);
@@ -110,6 +112,7 @@ describe("Booking Lambda", () => {
       },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await handler(event as any);
 
     expect(result.statusCode).toBe(200);

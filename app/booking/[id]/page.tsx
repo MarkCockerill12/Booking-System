@@ -7,7 +7,7 @@ import { AeroIconButton } from "@/components/aero-icon-button"
 import { AeroButton } from "@/components/aero-button"
 import { MapPin, Users, Calendar, ThermometerSun } from "lucide-react"
 import { vistaSlideIn } from "@/lib/anime-utils"
-import { roomsAPI, bookingsAPI, weatherAPI, authAPI } from "@/lib/api"
+import { roomsAPI, bookingsAPI, weatherAPI } from "@/lib/api"
 import Image from "next/image"
 import { toast } from "sonner"
 import type { Room, WeatherData } from "@/lib"
@@ -62,7 +62,7 @@ export default function BookingPage() {
           calculatePriceOnce(roomData, weatherData)
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[v0] Error fetching room details:", error)
       toast.error("Failed to load room details")
     } finally {
@@ -132,9 +132,10 @@ export default function BookingPage() {
         toast.success("Booking successful! Confirmation sent.")
         router.push("/search")
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[v0] Booking error:", error)
-      toast.error(error.message || "Booking failed. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "Booking failed. Please try again."
+      toast.error(errorMessage)
       setIsPaymentOpen(false)
     }
   }

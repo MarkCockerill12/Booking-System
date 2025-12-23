@@ -1,6 +1,7 @@
 import * as anime from "animejs"
 
 // Fix for webpack/Next.js: animejs exports default differently
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const animeInstance = (anime as any).default || anime
 
 export const vistaSlideIn = (target: string | HTMLElement, delay = 0) => {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, Calendar, Clock, MapPin, AlertCircle } from "lucide-react"
+import { Calendar, Clock } from "lucide-react"
 import { bookingsAPI } from "@/lib/api"
 import { AeroButton } from "./aero-button"
 import { AeroIconButton } from "./aero-icon-button"

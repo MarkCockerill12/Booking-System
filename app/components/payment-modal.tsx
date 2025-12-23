@@ -38,6 +38,7 @@ const PaymentForm = ({ amount, onSuccess, onCancel }: { amount: number, onSucces
         onSuccess(paymentMethod.id)
       }
     } catch (err) {
+      console.error("Payment error:", err)
       toast.error("An unexpected error occurred")
       setProcessing(false)
     }

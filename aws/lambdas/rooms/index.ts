@@ -11,6 +11,7 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const clientConfig: any = { region: process.env.AWS_REGION || 'us-east-1' };
 
 console.log('AWS_ENDPOINT:', process.env.AWS_ENDPOINT);
@@ -45,6 +46,7 @@ interface Room {
 
 interface ApiResponse {
   success: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
   error?: string;
 }
@@ -54,17 +56,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
 };
-
-/**
- * Parse and verify Cognito JWT token from Authorization header
- */
-function parseAuthToken(event: APIGatewayProxyEvent): string | null {
-  const authHeader = event.headers?.Authorization || event.headers?.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-  return authHeader.substring(7);
-}
 
 /**
  * Check if a room is available for a specific date range
@@ -219,6 +210,7 @@ async function getRoomById(roomId: string, date?: string): Promise<ApiResponse> 
  */
 export const handler = async (
   event: APIGatewayProxyEvent,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   context: Context
 ): Promise<APIGatewayProxyResult> => {
   console.log('🚀 Room Lambda Invoked!');

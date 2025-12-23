@@ -31,6 +31,7 @@ describe("Auth Lambda", () => {
       headers: {},
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await handler(event as any);
 
     expect(result.statusCode).toBe(201);
@@ -58,6 +59,7 @@ describe("Auth Lambda", () => {
       headers: {},
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await handler(event as any);
 
     expect(result.statusCode).toBe(200);
@@ -77,6 +79,7 @@ describe("Auth Lambda", () => {
       headers: {},
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await handler(event as any);
 
     expect(result.statusCode).toBe(400);
