@@ -205,10 +205,10 @@ Resources:
         Target: "es2020"
         Sourcemap: true
         EntryPoints: 
-          - index.ts
+          - lambdas/auth/index.ts
     Properties:
-      CodeUri: lambdas/auth/
-      Handler: index.handler
+      CodeUri: .
+      Handler: lambdas/auth/index.handler
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !Ref UserPool
@@ -285,10 +285,10 @@ Resources:
         Target: "es2020"
         Sourcemap: true
         EntryPoints: 
-          - index.ts
+          - lambdas/booking/index.ts
     Properties:
-      CodeUri: lambdas/booking/
-      Handler: index.handler
+      CodeUri: .
+      Handler: lambdas/booking/index.handler
       Environment:
         Variables:
           BOOKINGS_TABLE: !Ref BookingsTable
@@ -359,10 +359,10 @@ Resources:
         Target: "es2020"
         Sourcemap: true
         EntryPoints: 
-          - index.ts
+          - lambdas/weather/index.ts
     Properties:
-      CodeUri: lambdas/weather/
-      Handler: index.handler
+      CodeUri: .
+      Handler: lambdas/weather/index.handler
       Events:
         GetWeather:
           Type: Api
@@ -391,10 +391,10 @@ Resources:
         Target: "es2020"
         Sourcemap: true
         EntryPoints: 
-          - index.ts
+          - lambdas/financial/index.ts
     Properties:
-      CodeUri: lambdas/financial/
-      Handler: index.sqsHandler
+      CodeUri: .
+      Handler: lambdas/financial/index.sqsHandler
       Events:
         PaymentQueue:
           Type: SQS
@@ -425,10 +425,10 @@ Resources:
         Target: "es2020"
         Sourcemap: true
         EntryPoints: 
-          - index.ts
+          - lambdas/notification/index.ts
     Properties:
-      CodeUri: lambdas/notification/
-      Handler: index.handler
+      CodeUri: .
+      Handler: lambdas/notification/index.handler
       Environment:
         Variables:
           FROM_EMAIL: "2505285@dundee.ac.uk"
@@ -456,10 +456,10 @@ Resources:
         Target: "es2020"
         Sourcemap: true
         EntryPoints: 
-          - index.ts
+          - lambdas/rooms/index.ts
     Properties:
-      CodeUri: lambdas/rooms/
-      Handler: index.handler
+      CodeUri: .
+      Handler: lambdas/rooms/index.handler
       Environment:
         Variables:
           ROOMS_TABLE: !Ref RoomsTable

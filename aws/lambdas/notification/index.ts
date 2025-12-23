@@ -4,7 +4,7 @@ import {
   SendEmailCommand, 
 } from '@aws-sdk/client-ses';
 import {
-  DynamoDBClient,
+  DynamoDBClient, 
   GetItemCommand,
   PutItemCommand,
 } from '@aws-sdk/client-dynamodb';
