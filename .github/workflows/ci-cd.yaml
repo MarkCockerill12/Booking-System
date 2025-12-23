@@ -75,6 +75,7 @@ jobs:
 
       - name: Install Backend Dependencies
         run: |
+          npm install -g esbuild
           cd aws
           npm ci
 

@@ -389,7 +389,7 @@ async function saveNotificationRecord(
 }
 
 /**
- * Process a single SNS notification 
+ * Process a single SNS notification  
  */
 async function processSNSRecord(record: SNSEventRecord): Promise<void> {
   try {
