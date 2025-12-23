@@ -81,6 +81,6 @@ describe("Financial Lambda (SQS Handler)", () => {
     const updateCall = ddbMock.commandCalls(UpdateItemCommand)[0];
     expect(updateCall.args[0].input.TableName).toBe("bookings");
     expect(updateCall.args[0].input.Key).toEqual({ booking_id: { S: "booking-123" } });
-    expect(updateCall.args[0].input.ExpressionAttributeValues?.[":status"].S).toBe("paid");
+    expect(updateCall.args[0].input.ExpressionAttributeValues?.[":status"].S).toBe("CONFIRMED");
   });
 });

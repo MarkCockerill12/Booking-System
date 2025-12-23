@@ -174,9 +174,9 @@ async function processPayment(paymentRequest: PaymentRequest): Promise<ApiRespon
           Key: {
             booking_id: { S: bookingId },
           },
-          UpdateExpression: 'SET payment_status = :status, payment_id = :paymentId, updated_at = :updatedAt',
+          UpdateExpression: 'SET booking_status = :status, payment_id = :paymentId, updated_at = :updatedAt',
           ExpressionAttributeValues: {
-            ':status': { S: 'paid' },
+            ':status': { S: 'CONFIRMED' },
             ':paymentId': { S: paymentId },
             ':updatedAt': { N: now.toString() },
           },
