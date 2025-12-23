@@ -6,7 +6,6 @@ import {
 import {
   DynamoDBClient, 
   GetItemCommand, 
-  PutItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
@@ -33,7 +32,6 @@ const getClientConfig = () => {
 const sesClient = new SESClient(getClientConfig());
 const dynamoClient = new DynamoDBClient(getClientConfig());
 
-const NOTIFICATIONS_TABLE = process.env.NOTIFICATIONS_TABLE || 'notifications';
 const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USERS_TABLE = process.env.USERS_TABLE || 'users';
@@ -62,19 +60,6 @@ interface BookingDetails {
   purpose?: string;
   bookingStatus: string;
   paymentStatus?: string;
-}
-
-interface NotificationRecord {
-  id: string;
-  type: string;
-  userId: string;
-  email: string;
-  bookingId: string;
-  status: 'sent' | 'failed' | 'pending';
-  sentAt?: number;
-  error?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metadata?: Record<string, any>;
 }
 
 /**
@@ -358,41 +343,6 @@ async function sendEmailNotification(
 }
 
 /**
- * Save notification record to DynamoDB
- */
-async function saveNotificationRecord(
-  payload: NotificationPayload,
-  status: 'sent' | 'failed',
-  error?: string
-): Promise<void> {
-  try {
-    const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-
-    const record: NotificationRecord = {
-      id: notificationId,
-      type: payload.type,
-      userId: payload.userId,
-      email: payload.userEmail,
-      bookingId: payload.bookingId,
-      status,
-      sentAt: Date.now(),
-      error,
-      metadata: payload.metadata,
-    };
-
-    await dynamoClient.send(
-      new PutItemCommand({
-        TableName: NOTIFICATIONS_TABLE,
-        Item: marshall(record, { removeUndefinedValues: true }),
-      })
-    );
-  } catch (error) {
-    console.error('Error saving notification record:', error);
-    // Don't throw - logging failure shouldn't break notification
-  }
-}
-
-/**
  * Process a single SNS notification   
  */
 async function processSNSRecord(record: SNSEventRecord): Promise<void> {
@@ -416,13 +366,6 @@ async function processSNSRecord(record: SNSEventRecord): Promise<void> {
 
     // Send email
     const result = await sendEmailNotification(payload, booking);
-
-    // Save notification record
-    await saveNotificationRecord(
-      payload,
-      result.success ? 'sent' : 'failed',
-      result.error
-    );
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to send notification');

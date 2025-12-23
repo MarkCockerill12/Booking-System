@@ -433,6 +433,8 @@ Resources:
         Variables:
           FROM_EMAIL: "2505285@dundee.ac.uk"
           ADMIN_EMAIL: "2505285@dundee.ac.uk"
+          BOOKINGS_TABLE: !Ref BookingsTable
+          ROOMS_TABLE: !Ref RoomsTable
       Events:
         BookingNotification:
           Type: SNS
@@ -445,6 +447,10 @@ Resources:
                 - ses:SendEmail
                 - ses:SendRawEmail
               Resource: '*'
+        - DynamoDBReadPolicy:
+            TableName: !Ref BookingsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref RoomsTable
 
   # Room Service
   RoomFunction:
