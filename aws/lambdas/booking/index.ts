@@ -98,7 +98,6 @@ async function getWeatherForecast(location: string, date: string): Promise<numbe
   }
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const handler = async (event: BookingEvent) => {
   try {
     const method = event.httpMethod

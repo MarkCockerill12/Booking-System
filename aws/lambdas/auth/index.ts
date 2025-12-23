@@ -38,7 +38,7 @@ interface AuthEvent {
   headers: Record<string, string>
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 export const handler = async (event: AuthEvent) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",

@@ -10,9 +10,15 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.extends("next/core-web-vitals", "next/typescript", "plugin:@typescript-eslint/recommended"),
   {
     ignores: ["aws/dist/**", ".next/**", "node_modules/**", "aws/.aws-sam/**"]
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+    }
   }
 ];
 

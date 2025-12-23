@@ -10,7 +10,6 @@ import { roomsAPI } from "@/lib/api"
 import Image from "next/image"
 import { toast } from "sonner"
 import type { Room } from "@/lib"
-import Image from "next/image"
 
 import { AeroButton } from "@/components/aero-button"
 import { BookingSidebar } from "@/components/booking-sidebar"
@@ -36,8 +35,7 @@ export default function SearchPage() {
   const fetchRooms = async () => {
     try {
       // Use current dateFilter state (initialized to today)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const filters: any = {}
+      const filters: Record<string, string | number> = {}
       if (dateFilter) {
         filters.startDate = dateFilter
         filters.endDate = dateFilter
@@ -172,12 +170,14 @@ export default function SearchPage() {
               </div>
               <p className="text-gray-800 text-xl md:text-2xl font-bold">Searching for rooms...</p>
             </div>
-          ) : filteredRooms.length === 0 ? (
-            <div className="vista-glass p-12 md:p-16 rounded-2xl text-center shadow-2xl">
-              <p className="text-gray-700 text-xl md:text-2xl font-bold">No rooms found matching your criteria.</p>
-              <p className="text-gray-600 mt-2 text-base md:text-lg">Try adjusting your filters</p>
-            </div>
           ) : (
+            <>
+              {filteredRooms.length === 0 ? (
+                <div className="vista-glass p-12 md:p-16 rounded-2xl text-center shadow-2xl">
+                  <p className="text-gray-700 text-xl md:text-2xl font-bold">No rooms found matching your criteria.</p>
+                  <p className="text-gray-600 mt-2 text-base md:text-lg">Try adjusting your filters</p>
+                </div>
+              ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {filteredRooms.map((room) => (
                 <div
@@ -245,6 +245,8 @@ export default function SearchPage() {
                 </div>
               ))}
             </div>
+          )}
+            </>
           )}
         </div>
       </div>

@@ -73,11 +73,9 @@ interface PaymentRecord {
   createdAt: number;
   updatedAt: number;
   refundedAmount?: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface ApiResponse {
   success: boolean;
   data?: any;
@@ -409,10 +407,8 @@ export const sqsHandler = async (event: SQSEvent): Promise<void> => {
 /**
  * Lambda handler for API Gateway events
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export const handler = async (
   event: APIGatewayProxyEvent,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   context: Context
 ): Promise<APIGatewayProxyResult> => {
   console.log('Event:', JSON.stringify(event, null, 2));
