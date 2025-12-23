@@ -73,11 +73,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Backend Dependencies
+        run: |
+          cd aws
+          npm ci
+
       - name: Build TypeScript Lambdas
         run: npm run build:backend
 
       - name: Run Unit Tests (Jest)
-        run: npm test
+        run: |
+          cd aws
+          npm test
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
