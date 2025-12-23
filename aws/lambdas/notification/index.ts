@@ -36,8 +36,9 @@ const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'bookings';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USERS_TABLE = process.env.USERS_TABLE || 'users';
 const ROOMS_TABLE = process.env.ROOMS_TABLE || 'rooms';
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@conferencerooms.com';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@conferencerooms.com';
+
+const getFromEmail = () => process.env.FROM_EMAIL || 'noreply@conferencerooms.com';
+const getAdminEmail = () => process.env.ADMIN_EMAIL || 'admin@conferencerooms.com';
 
 interface NotificationPayload {
   type: 'booking_confirmation' | 'booking_cancellation' | 'booking_reminder' | 'payment_receipt';
@@ -205,7 +206,7 @@ function generateConfirmationEmail(booking: BookingDetails): string {
       <p>We look forward to hosting your meeting!</p>
       
       <p style="color: #666; font-size: 14px;">
-        Need to make changes? Contact us at ${ADMIN_EMAIL}
+        Need to make changes? Contact us at ${getAdminEmail()}
       </p>
     </div>
     <div class="footer">
@@ -269,7 +270,7 @@ function generateCancellationEmail(booking: BookingDetails): string {
       <p>If you paid for this booking, a refund will be processed within 5-7 business days.</p>
       
       <p style="color: #666; font-size: 14px;">
-        Questions? Contact us at ${ADMIN_EMAIL}
+        Questions? Contact us at ${getAdminEmail()}
       </p>
     </div>
     <div class="footer">
@@ -319,7 +320,7 @@ async function sendEmailNotification(
     }
 
     const command = new SendEmailCommand({
-      Source: FROM_EMAIL,
+      Source: getFromEmail(),
       Destination: {
         ToAddresses: [payload.userEmail],
       },
