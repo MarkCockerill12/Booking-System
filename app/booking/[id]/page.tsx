@@ -8,11 +8,11 @@ import { AeroButton } from "@/components/aero-button"
 import { MapPin, Users, Calendar, ThermometerSun } from "lucide-react"
 import { vistaSlideIn } from "@/lib/anime-utils"
 import { roomsAPI, bookingsAPI, weatherAPI, authAPI } from "@/lib/api"
+import Image from "next/image"
 import { toast } from "sonner"
 import type { Room, WeatherData } from "@/lib"
 import { BookingSidebar } from "@/components/booking-sidebar"
 import { PaymentModal } from "@/components/payment-modal"
-import Image from "next/image"
 
 export default function BookingPage() {
   const router = useRouter()
@@ -180,10 +180,12 @@ export default function BookingPage() {
           {/* Main Content */}
           <div className="p-6 md:p-10">
             <div className="w-full h-60 md:h-80 bg-gradient-to-br from-blue-400 via-cyan-300 to-green-400 rounded-2xl mb-8 relative overflow-hidden shadow-2xl">
-              <img
+              <Image
                 src={room.imageUrl || "/placeholder.svg?height=320&width=1000"}
                 alt={room.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                unoptimized
                 onError={(e) => {
                   const img = e.currentTarget as HTMLImageElement
                   if (!img.dataset.fallback) {

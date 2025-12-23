@@ -7,6 +7,7 @@ import { MapPin, Users, Calendar } from "lucide-react"
 import { vistaSlideIn } from "@/lib/anime-utils"
 import { AeroIconButton } from "@/components/aero-icon-button"
 import { authAPI, roomsAPI } from "@/lib/api"
+import Image from "next/image"
 import { toast } from "sonner"
 import type { Room } from "@/lib"
 import Image from "next/image"
@@ -183,10 +184,12 @@ export default function SearchPage() {
                   onClick={() => handleRoomClick(room.id)}
                 >
                   <div className="w-full h-40 md:h-48 bg-gradient-to-br from-blue-400 via-cyan-300 to-green-400 rounded-xl mb-6 relative overflow-hidden shadow-xl">
-                    <img
+                    <Image
                       src={room.imageUrl || "/placeholder.svg?height=192&width=400"}
                       alt={room.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      unoptimized
                       onError={(e) => {
                         const img = e.currentTarget as HTMLImageElement
                         if (!img.dataset.fallback) {
