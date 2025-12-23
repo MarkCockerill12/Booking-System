@@ -5,7 +5,7 @@ import {
 } from '@aws-sdk/client-ses';
 import {
   DynamoDBClient, 
-  GetItemCommand,
+  GetItemCommand, 
   PutItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';

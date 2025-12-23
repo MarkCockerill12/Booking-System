@@ -98,7 +98,7 @@ export default function AuthPage() {
     */
   }
 
-  return (
+  return ( 
     <VistaLayout>
       <div className="flex items-center justify-center min-h-[80vh]">
         <div ref={formRef} className="vista-glass-dark p-4 md:p-6 max-w-lg w-full opacity-0">
