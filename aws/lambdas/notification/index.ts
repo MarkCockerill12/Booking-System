@@ -7,7 +7,7 @@ import {
   DynamoDBClient, 
   GetItemCommand, 
 } from '@aws-sdk/client-dynamodb';
-import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
+import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 const getClientConfig = () => {
   const isLocal = process.env.AWS_SAM_LOCAL === 'true';
@@ -70,24 +70,38 @@ async function getBookingDetails(bookingId: string): Promise<BookingDetails | nu
     const command = new GetItemCommand({
       TableName: BOOKINGS_TABLE,
       Key: {
-        id: { S: bookingId },
+        booking_id: { S: bookingId },
       },
     });
 
     const result = await dynamoClient.send(command);
 
     if (!result.Item) {
+      console.error(`Booking not found for ID: ${bookingId}`);
       return null;
     }
 
-    const booking = unmarshall(result.Item) as BookingDetails;
+    const rawBooking = unmarshall(result.Item);
+    
+    const booking: BookingDetails = {
+      id: rawBooking.booking_id,
+      userId: rawBooking.user_id,
+      roomId: rawBooking.room_id,
+      startTime: rawBooking.start_time,
+      endTime: rawBooking.end_time,
+      totalAmount: rawBooking.total_price,
+      attendees: rawBooking.attendees || 0,
+      purpose: rawBooking.purpose,
+      bookingStatus: rawBooking.booking_status,
+      paymentStatus: rawBooking.paymentStatus, // This might be camelCase if updated by financial lambda?
+    };
 
     // Fetch room details
     if (booking.roomId) {
       const roomCommand = new GetItemCommand({
         TableName: ROOMS_TABLE,
         Key: {
-          id: { S: booking.roomId },
+          room_id: { S: booking.roomId },
         },
       });
 

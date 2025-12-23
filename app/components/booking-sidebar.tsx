@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 interface Booking {
   id: string
   roomName: string
+  location?: string
   startTime: string
   endTime: string
   status: "confirmed" | "cancelled" | "PENDING"
@@ -155,21 +156,33 @@ export function BookingSidebar({ isOpen, onClose }: BookingSidebarProps) {
   )
 }
 
-function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: string) => void }) {
+function getStatusColor(status: string) {
+  switch (status.toLowerCase()) {
+    case "confirmed":
+      return "bg-green-100 text-green-800"
+    case "cancelled":
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-yellow-100 text-yellow-800"
+  }
+}
+
+function BookingCard({ booking, onCancel }: { readonly booking: Booking; readonly onCancel: (id: string) => void }) {
   return (
     <div
       className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-white/20 shadow-sm hover:shadow-md transition-all"
     >
       <div className="flex justify-between items-start mb-3">
-        <h3 className="font-bold text-lg text-slate-900 dark:text-white">{booking.roomName || "Conference Room"}</h3>
+        <div>
+          <h3 className="font-bold text-lg text-slate-900 dark:text-white">{booking.roomName || "Conference Room"}</h3>
+          {booking.location && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">{booking.location}</p>
+          )}
+        </div>
         <span
           className={cn(
             "px-2 py-1 rounded-full text-xs font-bold",
-            booking.status.toLowerCase() === "confirmed"
-              ? "bg-green-100 text-green-800"
-              : booking.status.toLowerCase() === "cancelled"
-              ? "bg-red-100 text-red-800"
-              : "bg-yellow-100 text-yellow-800"
+            getStatusColor(booking.status)
           )}
         >
           {booking.status.toUpperCase()}

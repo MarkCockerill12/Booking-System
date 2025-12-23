@@ -47,8 +47,8 @@ export default function AuthPage() {
       }
     } catch (error: unknown) {
       console.error("Auth error:", error)
-      const errorMessage = error instanceof Error ? error.message : "Authentication failed"
-      toast.error(errorMessage)
+      // const errorMessage = error instanceof Error ? error.message : "Authentication failed"
+      toast.error("Incorrect email or username")
     } finally {
       setIsLoading(false)
     }
