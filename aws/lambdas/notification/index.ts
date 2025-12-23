@@ -54,10 +54,10 @@ interface BookingDetails {
   userId: string;
   roomId: string;
   roomName?: string;
+  location?: string;
   startTime: string;
   endTime: string;
   totalAmount: number;
-  attendees: number;
   purpose?: string;
   bookingStatus: string;
   paymentStatus?: string;
@@ -91,7 +91,6 @@ async function getBookingDetails(bookingId: string): Promise<BookingDetails | nu
       startTime: rawBooking.start_time,
       endTime: rawBooking.end_time,
       totalAmount: rawBooking.total_price,
-      attendees: rawBooking.attendees || 0,
       purpose: rawBooking.purpose,
       bookingStatus: rawBooking.booking_status,
       paymentStatus: rawBooking.paymentStatus, // This might be camelCase if updated by financial lambda?
@@ -110,6 +109,7 @@ async function getBookingDetails(bookingId: string): Promise<BookingDetails | nu
       if (roomResult.Item) {
         const room = unmarshall(roomResult.Item);
         booking.roomName = room.name;
+        booking.location = room.location;
       }
     }
 
@@ -176,16 +176,16 @@ function generateConfirmationEmail(booking: BookingDetails): string {
           <span>${booking.roomName || 'Conference Room'}</span>
         </div>
         <div class="detail-row">
+          <span class="label">Location:</span>
+          <span>${booking.location || 'Main Campus'}</span>
+        </div>
+        <div class="detail-row">
           <span class="label">Start Time:</span>
           <span>${formatDateTime(booking.startTime)}</span>
         </div>
         <div class="detail-row">
           <span class="label">End Time:</span>
           <span>${formatDateTime(booking.endTime)}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Attendees:</span>
-          <span>${booking.attendees} people</span>
         </div>
         ${booking.purpose ? `
         <div class="detail-row">
@@ -256,6 +256,10 @@ function generateCancellationEmail(booking: BookingDetails): string {
         <div class="detail-row">
           <span class="label">Room:</span>
           <span>${booking.roomName || 'Conference Room'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Location:</span>
+          <span>${booking.location || 'Main Campus'}</span>
         </div>
         <div class="detail-row">
           <span class="label">Originally Scheduled:</span>
