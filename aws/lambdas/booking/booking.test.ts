@@ -17,6 +17,7 @@ describe("Booking Lambda", () => {
     process.env.ROOMS_TABLE = "RoomsTable";
     process.env.PRICING_RULES_TABLE = "PricingRulesTable";
     process.env.PAYMENT_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/123456789012/PaymentQueue";
+    process.env.REFUND_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/123456789012/RefundQueue";
     process.env.WEATHER_FUNCTION_NAME = "WeatherFunction";
   });
 

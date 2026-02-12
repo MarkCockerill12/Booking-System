@@ -401,6 +401,11 @@ Resources:
           Properties:
             Queue: !GetAtt PaymentQueue.Arn
             BatchSize: 10
+        RefundQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt RefundQueue.Arn
+            BatchSize: 10
       Environment:
         Variables:
           STRIPE_SECRET_KEY: !Sub '{{resolve:secretsmanager:stripe-api-key:SecretString:secret_key}}'

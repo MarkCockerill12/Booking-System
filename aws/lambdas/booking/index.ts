@@ -33,6 +33,7 @@ const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE!
 const ROOMS_TABLE = process.env.ROOMS_TABLE!
 const PRICING_RULES_TABLE = process.env.PRICING_RULES_TABLE!
 const PAYMENT_QUEUE_URL = process.env.PAYMENT_QUEUE_URL!
+const REFUND_QUEUE_URL = process.env.REFUND_QUEUE_URL!
 const WEATHER_FUNCTION_NAME = process.env.WEATHER_FUNCTION_NAME!
 
 interface BookingEvent {
@@ -376,6 +377,29 @@ export const handler = async (event: BookingEvent) => {
       )
 
       const item = result.Attributes!
+
+      // Trigger refund if cancelled and payment exists
+      if (normalizedStatus === 'CANCELLED' && item.payment_id) {
+        try {
+          await sqsClient.send(
+            new SendMessageCommand({
+              QueueUrl: REFUND_QUEUE_URL,
+              MessageBody: JSON.stringify({
+                type: "refund",
+                data: {
+                  paymentId: item.payment_id,
+                  reason: "requested_by_customer"
+                },
+              }),
+            })
+          )
+          console.log(`Refund request sent for booking ${bookingId}`)
+        } catch (error) {
+          console.error(`Failed to send refund request for booking ${bookingId}:`, error)
+          // Note: We don't fail the request here as the cancellation was successful
+        }
+      }
+
       const booking = {
         id: item.booking_id,
         userId: item.user_id,
